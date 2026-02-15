@@ -1,1 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BushLog PWA</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+</head>
+<body>
 
+<h1>🐦 BushLog – Test Phase PWA</h1>
+
+<section>
+<h2>Log a Sighting</h2>
+<input type="text" id="observer" placeholder="Observer Name">
+<input type="text" id="species" placeholder="Species Name">
+<textarea id="notes" placeholder="Notes"></textarea>
+<p id="coords">GPS not captured</p>
+<button onclick="getLocation()">📍 Capture GPS</button>
+<button onclick="logSighting()">💾 Save Locally</button>
+</section>
+
+<section>
+<h2>Local Sightings</h2>
+<ul id="sightingList"></ul>
+<button onclick="syncDatabase()">⬆ Sync to Area Database</button>
+<button onclick="generateSummary()">📊 Area Summary</button>
+<button onclick="exportCSV()">📁 Export CSV</button>
+</section>
+
+<script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator){
+  navigator.serviceWorker.register('service-worker.js')
+  .then(()=>console.log('Service Worker Registered'))
+  .catch(()=>console.log('Service Worker Failed'));
+}
+</script>
+
+</body>
+</html>
