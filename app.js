@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const logButton = document.getElementById("logButton");
     const sightingsList = document.getElementById("sightingsList");
     const exportButton = document.getElementById("exportButton");
+    const coords = await getGPS().catch(() => ({lat:"-25.0", lon:"31.0"}));
 
     let currentCoords = null;
 
