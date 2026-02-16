@@ -137,12 +137,17 @@ document.addEventListener("DOMContentLoaded", function() {
     // --------------------------
     // LOG SIGHTING
     // --------------------------
-    logButton.addEventListener("click", async () => {
-        const observer = observerInput.value.trim();
-        const species = speciesInput.value.trim();
-        const notes = notesInput.value.trim();
+       logButton.disabled = true;
+        logButton.textContent = "Capturing GPS...";
 
-        if(!observer || !species) { alert("Observer and Species required."); return; }
+        let coords;
+        try {
+        coords = await getGPS(); // original GPS call
+        } catch(err) {
+            
+    // Fallback for desktop
+    coords = { lat:"-25.000000", lon:"31.000000" };
+}rn; }
 
         // Check for duplicate species today
         const today = new Date().toDateString();
