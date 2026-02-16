@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Bush Logger Field Tool</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BushLogger – Field Logger</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header>
-    <h1>🌿 Bush Logger</h1>
+    <h1>🌿 BushLogger</h1>
     <button id="settingsToggle">⚙️</button>
 </header>
 
-<!-- Slide Settings Panel -->
+<!-- Slide-out Settings Panel -->
 <div id="settingsPanel" class="settings-panel">
-
     <h2>Field Modules</h2>
 
     <label>
@@ -34,22 +33,20 @@
     </label>
 
     <button id="closeSettings">Close</button>
-
 </div>
 
 <main>
-
 <section>
     <h2>Log Sighting</h2>
 
     <label>Observer</label>
-<input type="text" id="observer" list="observerList" placeholder="Type or select observer">
-<datalist id="observerList"></datalist>
+    <input type="text" id="observer" list="observerList" placeholder="Type or select observer">
+    <datalist id="observerList"></datalist>
 
     <label>Species</label>
     <input type="text" id="species">
 
-    <!-- Species master list placeholder -->
+    <!-- Optional Species Master -->
     <div id="speciesMasterContainer" style="display:none;">
         <label>Select Species</label>
         <select id="speciesMaster"></select>
@@ -58,14 +55,13 @@
     <label>Notes</label>
     <textarea id="notes"></textarea>
 
-    <!-- Photo placeholder -->
+    <!-- Optional Photo -->
     <div id="photoContainer" style="display:none;">
         <label>Photo</label>
         <input type="file" id="photoInput" accept="image/*">
     </div>
 
     <button id="logButton">Log Sighting</button>
-
 </section>
 
 <section>
@@ -73,10 +69,8 @@
     <ul id="sightingsList"></ul>
     <button id="exportButton">Export CSV</button>
 </section>
-
 </main>
 
 <script src="app.js"></script>
-
 </body>
 </html>
