@@ -113,8 +113,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // --------------------------
     // GPS CAPTURE
     // --------------------------
-    function getGPS() {
-        return new Promise((resolve, reject) => {
+        function getGPS() {
+        return Promise.resolve({ lat: "-25.000000", lon: "31.000000" });
+    }
             // Check if on iPhone / Mobile device
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
