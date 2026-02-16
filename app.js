@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const logButton = document.getElementById("logButton");
     const sightingsList = document.getElementById("sightingsList");
     const exportButton = document.getElementById("exportButton");
-    const coords = await getGPS().catch(() => ({lat:"-25.0", lon:"31.0"}));
+    
 
     let currentCoords = null;
 
@@ -117,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // GPS CAPTURE
     // --------------------------
     function getGPS() {
+        const coords = await getGPS().catch(() => ({lat:"-25.0", lon:"31.0"}));
         return new Promise((resolve, reject) => {
             if (!navigator.geolocation) reject("GPS not supported");
             navigator.geolocation.getCurrentPosition(
