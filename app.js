@@ -118,13 +118,23 @@ document.addEventListener("DOMContentLoaded", function() {
 // --------------------------
 function getGPS() {
     return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) reject("GPS not supported");
+        if (!navigator.geolocation) {
+            // Desktop fallback coordinates
+            console.warn("GPS not supported. Using default coordinates for testing.");
+            resolve({ lat: "-25.000000", lon: "31.000000" });
+            return;
+        }
+
         navigator.geolocation.getCurrentPosition(
             pos => resolve({
                 lat: pos.coords.latitude.toFixed(6),
                 lon: pos.coords.longitude.toFixed(6)
             }),
-            () => reject("GPS failed"),
+            () => {
+                // GPS failed → fallback
+                console.warn("GPS failed. Using default coordinates for testing.");
+                resolve({ lat: "-25.000000", lon: "31.000000" });
+            },
             { enableHighAccuracy: true }
         );
     });
