@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const toggleEdit = document.getElementById("toggleEdit");
 
     const observerInput = document.getElementById("observer");
+    const observerList = document.getElementById("observerList");
     const speciesInput = document.getElementById("species");
     const speciesMasterContainer = document.getElementById("speciesMasterContainer");
     const speciesMaster = document.getElementById("speciesMaster");
@@ -21,9 +22,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const logButton = document.getElementById("logButton");
     const sightingsList = document.getElementById("sightingsList");
     const exportButton = document.getElementById("exportButton");
-    
-
-    let currentCoords = null;
 
     let sightings = JSON.parse(localStorage.getItem("sightings")) || [];
     let observers = JSON.parse(localStorage.getItem("recentObservers")) || [];
@@ -60,23 +58,21 @@ document.addEventListener("DOMContentLoaded", function() {
     applySettings();
 
     // --------------------------
-    // OBSERVER DROPDOWN HISTORY
+    // OBSERVER DROPDOWN
     // --------------------------
     function populateObserverDropdown() {
-    const datalist = document.getElementById("observerList");
-    datalist.innerHTML = ""; // clear existing
-
-    observers.forEach(name => {
-        const option = document.createElement("option");
-        option.value = name;
-        datalist.appendChild(option);
-    });
-}
+        observerList.innerHTML = "";
+        observers.forEach(name => {
+            const option = document.createElement("option");
+            option.value = name;
+            observerList.appendChild(option);
+        });
+    }
 
     function saveObserver(name) {
         observers = observers.filter(o => o !== name);
         observers.unshift(name);
-        observers = observers.slice(0,5); // last 5
+        observers = observers.slice(0,5);
         localStorage.setItem("recentObservers", JSON.stringify(observers));
         populateObserverDropdown();
     }
@@ -110,54 +106,33 @@ document.addEventListener("DOMContentLoaded", function() {
             li.appendChild(deleteBtn);
             sightingsList.appendChild(li);
         });
-
-        const today = new Date().toDateString();
-        const existingIndex = sightings.findIndex(s => 
-        s.species.toLowerCase() === species.toLowerCase() &&
-        new Date(s.date).toDateString() === today
-    );
-
-        if(existingIndex !== -1) {
-        const deletePrevious = confirm(`"${species}" is already logged today. Delete previous entry?`);
-        if(deletePrevious) {
-        sightings.splice(existingIndex, 1); // remove old
-        localStorage.setItem("sightings", JSON.stringify(sightings));
-        } else {
-        return; // do not log new entry
     }
-}
-    }
-
-    
 
     renderSightings();
 
-   // --------------------------
-// GPS CAPTURE
-// --------------------------
-function getGPS() {
-    return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
-            // Desktop fallback coordinates
-            console.warn("GPS not supported. Using default coordinates for testing.");
-            resolve({ lat: "-25.000000", lon: "31.000000" });
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            pos => resolve({
-                lat: pos.coords.latitude.toFixed(6),
-                lon: pos.coords.longitude.toFixed(6)
-            }),
-            () => {
-                // GPS failed → fallback
-                console.warn("GPS failed. Using default coordinates for testing.");
-                resolve({ lat: "-25.000000", lon: "31.000000" });
-            },
-            { enableHighAccuracy: true }
-        );
-    });
-}
+    // --------------------------
+    // GPS CAPTURE
+    // --------------------------
+    function getGPS() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                console.warn("GPS not supported. Using fallback coordinates.");
+                resolve({lat:"-25.000000", lon:"31.000000"});
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                pos => resolve({
+                    lat: pos.coords.latitude.toFixed(6),
+                    lon: pos.coords.longitude.toFixed(6)
+                }),
+                () => {
+                    console.warn("GPS failed. Using fallback coordinates.");
+                    resolve({lat:"-25.000000", lon:"31.000000"});
+                },
+                { enableHighAccuracy: true }
+            );
+        });
+    }
 
     // --------------------------
     // LOG SIGHTING
@@ -167,9 +142,24 @@ function getGPS() {
         const species = speciesInput.value.trim();
         const notes = notesInput.value.trim();
 
-        if (!observer || !species) {
-            alert("Observer and Species required.");
-            return;
+        if(!observer || !species) { alert("Observer and Species required."); return; }
+
+        // Check for duplicate species today
+        const today = new Date().toDateString();
+        const existingIndex = sightings.findIndex(s => 
+            s.species.toLowerCase() === species.toLowerCase() &&
+            new Date(s.date).toDateString() === today
+        );
+
+        if(existingIndex !== -1) {
+            const deletePrevious = confirm(`"${species}" is already logged today. Delete previous entry?`);
+            if(deletePrevious) {
+                sightings.splice(existingIndex,1);
+                localStorage.setItem("sightings", JSON.stringify(sightings));
+                renderSightings();
+            } else {
+                return; // cancel logging
+            }
         }
 
         logButton.disabled = true;
@@ -177,7 +167,6 @@ function getGPS() {
 
         try {
             const coords = await getGPS();
-            currentCoords = coords;
 
             const newSighting = {
                 observer,
@@ -195,7 +184,6 @@ function getGPS() {
             observerInput.value = "";
             speciesInput.value = "";
             notesInput.value = "";
-            currentCoords = null;
 
             renderSightings();
 
