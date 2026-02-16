@@ -115,11 +115,16 @@ document.addEventListener("DOMContentLoaded", function() {
     // --------------------------
     function getGPS() {
         return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) {
-                console.warn("GPS not supported. Using fallback coordinates.");
-                resolve({lat:"-25.000000", lon:"31.000000"});
+            // Check if on iPhone / Mobile device
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            if (!navigator.geolocation || !isMobile) {
+                // Desktop fallback
+                console.warn("Using fallback GPS coordinates for desktop/testing.");
+                resolve({ lat: "-25.000000", lon: "31.000000" });
                 return;
             }
+
             navigator.geolocation.getCurrentPosition(
                 pos => resolve({
                     lat: pos.coords.latitude.toFixed(6),
@@ -127,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }),
                 () => {
                     console.warn("GPS failed. Using fallback coordinates.");
-                    resolve({lat:"-25.000000", lon:"31.000000"});
+                    resolve({ lat: "-25.000000", lon: "31.000000" });
                 },
                 { enableHighAccuracy: true }
             );
@@ -137,17 +142,15 @@ document.addEventListener("DOMContentLoaded", function() {
     // --------------------------
     // LOG SIGHTING
     // --------------------------
-       logButton.disabled = true;
-        logButton.textContent = "Capturing GPS...";
+    logButton.addEventListener("click", async () => {
+        const observer = observerInput.value.trim();
+        const species = speciesInput.value.trim();
+        const notes = notesInput.value.trim();
 
-        let coords;
-        try {
-        coords = await getGPS(); // original GPS call
-        } catch(err) {
-            
-    // Fallback for desktop
-    coords = { lat:"-25.000000", lon:"31.000000" };
-}rn; }
+        if(!observer || !species) {
+            alert("Observer and Species required.");
+            return;
+        }
 
         // Check for duplicate species today
         const today = new Date().toDateString();
@@ -186,6 +189,7 @@ document.addEventListener("DOMContentLoaded", function() {
             localStorage.setItem("sightings", JSON.stringify(sightings));
             saveObserver(observer);
 
+            // Clear inputs
             observerInput.value = "";
             speciesInput.value = "";
             notesInput.value = "";
@@ -204,7 +208,10 @@ document.addEventListener("DOMContentLoaded", function() {
     // EXPORT CSV
     // --------------------------
     exportButton.addEventListener("click", () => {
-        if (sightings.length === 0) { alert("No data to export."); return; }
+        if(sightings.length === 0) {
+            alert("No data to export.");
+            return;
+        }
 
         const headers = ["Observer","Species","Latitude","Longitude","Notes","ISO_Date","Readable_Date"];
         const rows = sightings.map(s => [
