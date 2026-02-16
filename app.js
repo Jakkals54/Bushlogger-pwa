@@ -110,7 +110,25 @@ document.addEventListener("DOMContentLoaded", function() {
             li.appendChild(deleteBtn);
             sightingsList.appendChild(li);
         });
+
+        const today = new Date().toDateString();
+        const existingIndex = sightings.findIndex(s => 
+        s.species.toLowerCase() === species.toLowerCase() &&
+        new Date(s.date).toDateString() === today
+    );
+
+        if(existingIndex !== -1) {
+        const deletePrevious = confirm(`"${species}" is already logged today. Delete previous entry?`);
+        if(deletePrevious) {
+        sightings.splice(existingIndex, 1); // remove old
+        localStorage.setItem("sightings", JSON.stringify(sightings));
+        } else {
+        return; // do not log new entry
     }
+}
+    }
+
+    
 
     renderSightings();
 
