@@ -113,23 +113,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
     renderSightings();
 
-    // --------------------------
-    // GPS CAPTURE
-    // --------------------------
-    function getGPS() {
-        const coords = await getGPS().catch(() => ({lat:"-25.0", lon:"31.0"}));
-        return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) reject("GPS not supported");
-            navigator.geolocation.getCurrentPosition(
-                pos => resolve({
-                    lat: pos.coords.latitude.toFixed(6),
-                    lon: pos.coords.longitude.toFixed(6)
-                }),
-                () => reject("GPS failed"),
-                { enableHighAccuracy: true }
-            );
-        });
-    }
+   // --------------------------
+// GPS CAPTURE
+// --------------------------
+function getGPS() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) reject("GPS not supported");
+        navigator.geolocation.getCurrentPosition(
+            pos => resolve({
+                lat: pos.coords.latitude.toFixed(6),
+                lon: pos.coords.longitude.toFixed(6)
+            }),
+            () => reject("GPS failed"),
+            { enableHighAccuracy: true }
+        );
+    });
+}
 
     // --------------------------
     // LOG SIGHTING
