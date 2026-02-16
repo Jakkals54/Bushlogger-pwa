@@ -1,193 +1,109 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
 
-    const observerInput = document.getElementById("observer");
-    const observerSelect = document.getElementById("observerSelect");
-    const speciesInput = document.getElementById("species");
-    const notesInput = document.getElementById("notes");
-    const logButton = document.getElementById("logButton");
+    const form = document.getElementById("sightingForm");
     const sightingsList = document.getElementById("sightingsList");
-    const exportButton = document.getElementById("exportButton");
+    const exportBtn = document.getElementById("exportBtn");
+    const observerSelect = document.getElementById("observer");
 
     let sightings = JSON.parse(localStorage.getItem("sightings")) || [];
-    let observers = JSON.parse(localStorage.getItem("recentObservers")) || [];
 
     // =========================
-    // GPS REQUIRED
+    // Populate Observer Dropdown
     // =========================
-    function getGPS() {
-        return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) reject("No GPS");
 
-            navigator.geolocation.getCurrentPosition(
-                position => {
-                    resolve({
-                        lat: position.coords.latitude.toFixed(6),
-                        lon: position.coords.longitude.toFixed(6)
-                    });
-                },
-                () => reject("GPS failed"),
-                { enableHighAccuracy: true }
-            );
-        });
-    }
+    const observers = ["Frans", "Ranger A", "Ranger B"];
 
-    // =========================
-    // Observer Dropdown
-    // =========================
-    function populateObserverDropdown() {
-        observerSelect.innerHTML = '<option value="">Select recent observer</option>';
-        observers.forEach(name => {
-            const option = document.createElement("option");
-            option.value = name;
-            option.textContent = name;
-            observerSelect.appendChild(option);
-        });
-    }
-
-    observerSelect.addEventListener("change", function () {
-        observerInput.value = observerSelect.value;
+    observers.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        observerSelect.appendChild(option);
     });
 
-    function saveObserver(name) {
-        observers = observers.filter(o => o !== name);
-        observers.unshift(name);
-        observers = observers.slice(0, 5);
-        localStorage.setItem("recentObservers", JSON.stringify(observers));
-        populateObserverDropdown();
-    }
+    // =========================
+    // Render Sightings
+    // =========================
 
-    // =========================
-    // Render List
-    // =========================
     function renderSightings() {
         sightingsList.innerHTML = "";
 
-        sightings.forEach((s, index) => {
-
+        sightings.forEach((sighting, index) => {
             const li = document.createElement("li");
-
             li.innerHTML = `
-                <strong>${s.species}</strong><br>
-                Observer: ${s.observer}<br>
-                GPS: ${s.lat}, ${s.lon}<br>
-                Notes: ${s.notes || "—"}<br>
-                Date: ${new Date(s.date).toLocaleString()}
+                <strong>${sighting.species}</strong><br>
+                Observer: ${sighting.observer}<br>
+                Location: ${sighting.location}<br>
+                Notes: ${sighting.notes}<br>
+                <button class="delete-btn" data-index="${index}">Delete</button>
             `;
+            sightingsList.appendChild(li);
+        });
 
-            const deleteBtn = document.createElement("button");
-            deleteBtn.textContent = "Delete";
-            deleteBtn.className = "delete-btn";
-            deleteBtn.addEventListener("click", function () {
+        // Delete buttons
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", (e) => {
+                const index = e.target.getAttribute("data-index");
                 sightings.splice(index, 1);
                 localStorage.setItem("sightings", JSON.stringify(sightings));
                 renderSightings();
             });
-
-            li.appendChild(deleteBtn);
-            sightingsList.appendChild(li);
         });
     }
 
     // =========================
     // Log Sighting
     // =========================
-    logButton.addEventListener("click", async function () {
 
-        const observer = observerInput.value.trim();
-        const species = speciesInput.value.trim();
-        const notes = notesInput.value.trim();
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
 
-        if (!observer || !species) {
-            alert("Observer and Species required.");
-            return;
-        }
+        const species = document.getElementById("species").value;
+        const observer = observerSelect.value;
+        const location = document.getElementById("location").value;
+        const notes = document.getElementById("notes").value;
 
-        logButton.disabled = true;
-        logButton.textContent = "Capturing GPS...";
+        const newSighting = {
+            species,
+            observer,
+            location,
+            notes,
+            timestamp: new Date().toISOString()
+        };
 
-        try {
-            const gps = await getGPS();
+        sightings.push(newSighting);
+        localStorage.setItem("sightings", JSON.stringify(sightings));
 
-            const newSighting = {
-                observer,
-                species,
-                notes,
-                lat: gps.lat,
-                lon: gps.lon,
-                date: new Date().toISOString()
-            };
-
-            sightings.unshift(newSighting);
-            localStorage.setItem("sightings", JSON.stringify(sightings));
-
-            saveObserver(observer);
-
-            observerInput.value = "";
-            speciesInput.value = "";
-            notesInput.value = "";
-
-            renderSightings();
-
-        } catch (err) {
-            alert("GPS required. Enable location services.");
-        }
-
-        logButton.disabled = false;
-        logButton.textContent = "Log Sighting";
+        form.reset();
+        renderSightings();
     });
 
     // =========================
-    // ADVANCED CSV EXPORT
+    // Export CSV
     // =========================
-    exportButton.addEventListener("click", function () {
 
+    exportBtn.addEventListener("click", () => {
         if (sightings.length === 0) {
             alert("No data to export.");
             return;
         }
 
-        const headers = [
-            "Observer",
-            "Species",
-            "Latitude",
-            "Longitude",
-            "Notes",
-            "ISO_Date",
-            "Readable_Date"
-        ];
+        let csv = "Species,Observer,Location,Notes,Timestamp\n";
 
-        let rows = sightings.map(s => [
-            escapeCSV(s.observer),
-            escapeCSV(s.species),
-            s.lat,
-            s.lon,
-            escapeCSV(s.notes || ""),
-            s.date,
-            new Date(s.date).toLocaleString()
-        ]);
+        sightings.forEach(s => {
+            csv += `"${s.species}","${s.observer}","${s.location}","${s.notes}","${s.timestamp}"\n`;
+        });
 
-        let csvContent =
-            headers.join(",") + "\n" +
-            rows.map(r => r.join(",")).join("\n");
-
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const blob = new Blob([csv], { type: "text/csv" });
         const url = URL.createObjectURL(blob);
 
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "BushLogger_FieldData.csv";
-        link.click();
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "sightings.csv";
+        a.click();
 
         URL.revokeObjectURL(url);
     });
 
-    // Prevent broken commas in notes
-    function escapeCSV(value) {
-        if (!value) return "";
-        value = value.replace(/"/g, '""');
-        return `"${value}"`;
-    }
-
-    populateObserverDropdown();
+    // Initial render
     renderSightings();
 });
