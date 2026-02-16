@@ -1,45 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BushLogger - PWA</title>
-<link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <title>Bush Logger</title>
+
+    <!-- Mobile Responsive -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e7d32">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>🐦 BushLogger – Test Phase PWA</h1>
+    <h1>🌿 Bush Logger</h1>
 
-<section>
-  <h2>Log a Sighting</h2>
+    <!-- Log Section -->
+    <section>
+        <h2>Log a Sighting</h2>
 
-  <label>Observer:</label>
-  <input list="observerList" id="observer" placeholder="Observer Name">
-  <datalist id="observerList"></datalist>
+        <label>Observer</label>
+        <input type="text" id="observer" placeholder="Enter observer name">
 
-  <input type="text" id="species" placeholder="Species Name">
-  <textarea id="notes" placeholder="Notes"></textarea>
-  <p id="coords">GPS not captured</p>
+        <label>Recent Observers</label>
+        <select id="observerSelect">
+            <option value="">Select recent observer</option>
+        </select>
 
-  <button onclick="getLocation()">📍 Capture GPS</button>
-  <button onclick="logSighting()">💾 Save Locally</button>
-  <button onclick="clearForm()">🧹 Clear Form</button>
-</section>
+        <label>Species</label>
+        <input type="text" id="species" placeholder="Enter species name">
 
-<section>
-  <h2>Local Sightings</h2>
-  <ul id="sightingList"></ul>
-  <button onclick="shareLastSighting()">📤 Share Last Sighting</button>
-</section>
+        <label>Notes</label>
+        <textarea id="notes" placeholder="Optional notes"></textarea>
 
-<script src="app.js"></script>
-<script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js")
-      .then(() => console.log("Service Worker Registered"));
-  }
-</script>
+        <button id="logButton">Log Sighting</button>
+    </section>
+
+    <!-- Sightings List -->
+    <section>
+        <h2>Logged Sightings</h2>
+        <ul id="sightingsList"></ul>
+    </section>
+
+    <!-- Share -->
+    <section>
+        <button id="shareButton">Share Sightings</button>
+    </section>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(() => console.log("Service Worker Registered"))
+                .catch(err => console.log("SW Error:", err));
+        }
+    </script>
 
 </body>
 </html>
