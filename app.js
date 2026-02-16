@@ -1,142 +1,139 @@
-// ---------- Recent Observers (Autocomplete) ----------
+document.addEventListener("DOMContentLoaded", function () {
 
-function saveObserver(name) {
-  if (!name) return;
-  let observers = JSON.parse(localStorage.getItem("recentObservers") || "[]");
+    const observerInput = document.getElementById("observer");
+    const observerSelect = document.getElementById("observerSelect");
+    const speciesInput = document.getElementById("species");
+    const notesInput = document.getElementById("notes");
+    const logButton = document.getElementById("logButton");
+    const sightingsList = document.getElementById("sightingsList");
+    const shareButton = document.getElementById("shareButton");
 
-  observers = observers.filter(o => o !== name);
-  observers.unshift(name);
+    let sightings = JSON.parse(localStorage.getItem("sightings")) || [];
+    let observers = JSON.parse(localStorage.getItem("recentObservers")) || [];
 
-  if (observers.length > 5) observers = observers.slice(0, 5);
+    // =========================
+    // Populate Observer Dropdown
+    // =========================
+    function populateObserverDropdown() {
+        observerSelect.innerHTML = '<option value="">Select recent observer</option>';
 
-  localStorage.setItem("recentObservers", JSON.stringify(observers));
-}
+        observers.forEach(name => {
+            const option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
+            observerSelect.appendChild(option);
+        });
+    }
 
-function populateObserverList() {
-  const observers = JSON.parse(localStorage.getItem("recentObservers") || "[]");
-  const dataList = document.getElementById("observerList");
-  dataList.innerHTML = "";
-
-  observers.forEach(o => {
-    const option = document.createElement("option");
-    option.value = o;
-    dataList.appendChild(option);
-  });
-}
-
-window.addEventListener("load", populateObserverList);
-
-// ---------- GPS ----------
-
-function getLocation() {
-  const coordsDisplay = document.getElementById("coords");
-
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        coordsDisplay.textContent =
-          position.coords.latitude + ", " + position.coords.longitude;
-      },
-      () => {
-        coordsDisplay.textContent = "Unable to get GPS";
-      }
-    );
-  } else {
-    coordsDisplay.textContent = "GPS not supported";
-  }
-}
-
-// ---------- Log Sighting ----------
-
-function logSighting() {
-  const observer = document.getElementById("observer").value.trim();
-  const species = document.getElementById("species").value.trim();
-  const notes = document.getElementById("notes").value.trim();
-  const coords = document.getElementById("coords").textContent;
-
-  if (!observer || !species) {
-    alert("Please enter observer and species");
-    return;
-  }
-
-  let sightings = JSON.parse(localStorage.getItem("sightings") || "[]");
-
-  const sighting = {
-    observer,
-    species,
-    notes,
-    coords,
-    date: new Date().toISOString()
-  };
-
-  sightings.push(sighting);
-  localStorage.setItem("sightings", JSON.stringify(sightings));
-
-  saveObserver(observer);
-  populateObserverList();
-  updateSightingList();
-
-  alert("Sighting saved!");
-}
-
-// ---------- Update List ----------
-
-function updateSightingList() {
-  const sightings = JSON.parse(localStorage.getItem("sightings") || "[]");
-  const list = document.getElementById("sightingList");
-  list.innerHTML = "";
-
-  sightings.slice().reverse().forEach(s => {
-    const li = document.createElement("li");
-    li.textContent =
-      s.date.split("T")[0] +
-      " | " +
-      s.observer +
-      " | " +
-      s.species +
-      " | " +
-      s.coords;
-
-    list.appendChild(li);
-  });
-}
-
-window.addEventListener("load", updateSightingList);
-
-// ---------- Clear Form ----------
-
-function clearForm() {
-  document.getElementById("observer").value = "";
-  document.getElementById("species").value = "";
-  document.getElementById("notes").value = "";
-  document.getElementById("coords").textContent = "GPS not captured";
-}
-
-// ---------- Share Last ----------
-
-function shareLastSighting() {
-  const sightings = JSON.parse(localStorage.getItem("sightings") || "[]");
-
-  if (sightings.length === 0) {
-    alert("No sightings to share");
-    return;
-  }
-
-  const s = sightings[sightings.length - 1];
-
-  const shareText =
-    "Observer: " + s.observer + "\n" +
-    "Species: " + s.species + "\n" +
-    "Notes: " + s.notes + "\n" +
-    "Coords: " + s.coords;
-
-  if (navigator.share) {
-    navigator.share({
-      title: "Bird Sighting: " + s.species,
-      text: shareText
+    observerSelect.addEventListener("change", function () {
+        if (observerSelect.value !== "") {
+            observerInput.value = observerSelect.value;
+        }
     });
-  } else {
-    navigator.clipboard.writeText(shareText);
-    alert("Sharing not supported. Copied to clipboard.");
-  }
-}
+
+    // =========================
+    // Save Observer (max 5)
+    // =========================
+    function saveObserver(name) {
+        if (!name) return;
+
+        observers = observers.filter(o => o !== name);
+        observers.unshift(name);
+
+        if (observers.length > 5) {
+            observers = observers.slice(0, 5);
+        }
+
+        localStorage.setItem("recentObservers", JSON.stringify(observers));
+        populateObserverDropdown();
+    }
+
+    // =========================
+    // Render Sightings
+    // =========================
+    function renderSightings() {
+        sightingsList.innerHTML = "";
+
+        sightings.forEach((sighting, index) => {
+            const li = document.createElement("li");
+
+            li.innerHTML = `
+                <strong>${sighting.species}</strong><br>
+                Observer: ${sighting.observer}<br>
+                Notes: ${sighting.notes || "—"}<br>
+                Date: ${new Date(sighting.date).toLocaleString()}
+            `;
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.className = "delete-btn";
+
+            deleteBtn.addEventListener("click", function () {
+                sightings.splice(index, 1);
+                localStorage.setItem("sightings", JSON.stringify(sightings));
+                renderSightings();
+            });
+
+            li.appendChild(deleteBtn);
+            sightingsList.appendChild(li);
+        });
+    }
+
+    // =========================
+    // Log New Sighting
+    // =========================
+    logButton.addEventListener("click", function () {
+
+        const observer = observerInput.value.trim();
+        const species = speciesInput.value.trim();
+        const notes = notesInput.value.trim();
+
+        if (!observer || !species) {
+            alert("Observer and Species are required.");
+            return;
+        }
+
+        const newSighting = {
+            observer,
+            species,
+            notes,
+            date: new Date().toISOString()
+        };
+
+        sightings.unshift(newSighting);
+        localStorage.setItem("sightings", JSON.stringify(sightings));
+
+        saveObserver(observer);
+
+        observerInput.value = "";
+        speciesInput.value = "";
+        notesInput.value = "";
+
+        renderSightings();
+    });
+
+    // =========================
+    // Share Function
+    // =========================
+    shareButton.addEventListener("click", function () {
+
+        const shareText = sightings.map(s =>
+            `${s.species} (Observer: ${s.observer})`
+        ).join("\n");
+
+        if (navigator.share) {
+            navigator.share({
+                title: "Bush Logger Sightings",
+                text: shareText
+            });
+        } else {
+            navigator.clipboard.writeText(shareText);
+            alert("Copied to clipboard!");
+        }
+    });
+
+    // Initial Load
+    populateObserverDropdown();
+    renderSightings();
+
+});
