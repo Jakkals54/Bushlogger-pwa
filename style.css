@@ -1,71 +1,171 @@
-/* General Layout */
+/* =========================
+   GENERAL LAYOUT
+========================= */
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-  margin: 16px;
-  background-color: #f5f5f5;
-  color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 16px;
+    background-color: #f4f6f5;
+    color: #333;
+}
+
+main {
+    margin-top: 20px;
 }
 
 h1 {
-  text-align: center;
-  margin-bottom: 20px;
+    margin: 0;
+    font-size: 22px;
 }
+
+h2 {
+    margin-top: 0;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#settingsToggle {
+    font-size: 20px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: #2e7d32;
+    color: white;
+    cursor: pointer;
+}
+
+/* =========================
+   SECTIONS
+========================= */
 
 section {
-  background: white;
-  padding: 16px;
-  margin-bottom: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    background: white;
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-/* Inputs */
+/* =========================
+   INPUTS
+========================= */
+
 input,
 textarea,
 select {
-  width: 100%;
-  padding: 12px;
-  margin-top: 6px;
-  margin-bottom: 12px;
-  font-size: 16px; /* Prevents zoom on iOS */
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    font-size: 16px; /* prevents zoom on iPhone */
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
 }
 
-/* Buttons */
+textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
 button {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: none;
-  background-color: #2e7d32;
-  color: white;
-  cursor: pointer;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    background-color: #2e7d32;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s ease;
 }
 
-/* Sightings List */
+button:hover {
+    background-color: #256428;
+}
+
+button:active {
+    background-color: #1b4d1f;
+}
+
+/* Delete button styling */
+.delete-btn {
+    background-color: #c62828;
+}
+
+.delete-btn:hover {
+    background-color: #a61e1e;
+}
+
+/* =========================
+   SIGHTINGS LIST
+========================= */
+
 ul {
-  list-style: none;
-  padding: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 li {
-  background: #ffffff;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    background: #ffffff;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    font-size: 14px;
 }
 
-/* Delete Button inside sighting */
-.delete-btn {
-  margin-top: 8px;
-  background-color: #c62828;
+/* =========================
+   SETTINGS SLIDE PANEL
+========================= */
+
+.settings-panel {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 260px;
+    height: 100%;
+    background: white;
+    box-shadow: -3px 0 8px rgba(0,0,0,0.2);
+    padding: 20px;
+    transition: right 0.3s ease;
+    z-index: 1000;
+    overflow-y: auto;
 }
 
-.delete-btn:active {
-  background-color: #9e1e1e;
+.settings-panel.open {
+    right: 0;
+}
+
+.settings-panel h2 {
+    margin-top: 0;
+}
+
+.settings-panel label {
+    display: block;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.settings-panel input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+#closeSettings {
+    background-color: #555;
 }
