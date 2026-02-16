@@ -6,25 +6,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const notesInput = document.getElementById("notes");
     const logButton = document.getElementById("logButton");
     const sightingsList = document.getElementById("sightingsList");
+    const exportButton = document.getElementById("exportButton");
 
     let sightings = JSON.parse(localStorage.getItem("sightings")) || [];
     let observers = JSON.parse(localStorage.getItem("recentObservers")) || [];
 
     // =========================
-    // GPS Function (Required)
+    // GPS REQUIRED
     // =========================
     function getGPS() {
         return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) {
-                reject("GPS not supported");
-            }
+            if (!navigator.geolocation) reject("No GPS");
 
             navigator.geolocation.getCurrentPosition(
                 position => {
-                    const coords =
-                        position.coords.latitude.toFixed(6) + ", " +
-                        position.coords.longitude.toFixed(6);
-                    resolve(coords);
+                    resolve({
+                        lat: position.coords.latitude.toFixed(6),
+                        lon: position.coords.longitude.toFixed(6)
+                    });
                 },
                 () => reject("GPS failed"),
                 { enableHighAccuracy: true }
@@ -58,21 +57,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // =========================
-    // Render Sightings
+    // Render List
     // =========================
     function renderSightings() {
         sightingsList.innerHTML = "";
 
-        sightings.forEach((sighting, index) => {
+        sightings.forEach((s, index) => {
 
             const li = document.createElement("li");
 
             li.innerHTML = `
-                <strong>${sighting.species}</strong><br>
-                Observer: ${sighting.observer}<br>
-                GPS: ${sighting.coords}<br>
-                Notes: ${sighting.notes || "—"}<br>
-                Date: ${new Date(sighting.date).toLocaleString()}
+                <strong>${s.species}</strong><br>
+                Observer: ${s.observer}<br>
+                GPS: ${s.lat}, ${s.lon}<br>
+                Notes: ${s.notes || "—"}<br>
+                Date: ${new Date(s.date).toLocaleString()}
             `;
 
             const deleteBtn = document.createElement("button");
@@ -90,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // =========================
-    // Log Sighting (GPS Required)
+    // Log Sighting
     // =========================
     logButton.addEventListener("click", async function () {
 
@@ -99,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const notes = notesInput.value.trim();
 
         if (!observer || !species) {
-            alert("Observer and Species are required.");
+            alert("Observer and Species required.");
             return;
         }
 
@@ -107,13 +106,14 @@ document.addEventListener("DOMContentLoaded", function () {
         logButton.textContent = "Capturing GPS...";
 
         try {
-            const coords = await getGPS();
+            const gps = await getGPS();
 
             const newSighting = {
                 observer,
                 species,
                 notes,
-                coords,
+                lat: gps.lat,
+                lon: gps.lon,
                 date: new Date().toISOString()
             };
 
@@ -128,13 +128,65 @@ document.addEventListener("DOMContentLoaded", function () {
 
             renderSightings();
 
-        } catch (error) {
-            alert("GPS required. Please enable location services.");
+        } catch (err) {
+            alert("GPS required. Enable location services.");
         }
 
         logButton.disabled = false;
         logButton.textContent = "Log Sighting";
     });
+
+    // =========================
+    // ADVANCED CSV EXPORT
+    // =========================
+    exportButton.addEventListener("click", function () {
+
+        if (sightings.length === 0) {
+            alert("No data to export.");
+            return;
+        }
+
+        const headers = [
+            "Observer",
+            "Species",
+            "Latitude",
+            "Longitude",
+            "Notes",
+            "ISO_Date",
+            "Readable_Date"
+        ];
+
+        let rows = sightings.map(s => [
+            escapeCSV(s.observer),
+            escapeCSV(s.species),
+            s.lat,
+            s.lon,
+            escapeCSV(s.notes || ""),
+            s.date,
+            new Date(s.date).toLocaleString()
+        ]);
+
+        let csvContent =
+            headers.join(",") + "\n" +
+            rows.map(r => r.join(",")).join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "BushLogger_FieldData.csv";
+        link.click();
+
+        URL.revokeObjectURL(url);
+    });
+
+    // Prevent broken commas in notes
+    function escapeCSV(value) {
+        if (!value) return "";
+        value = value.replace(/"/g, '""');
+        return `"${value}"`;
+    }
 
     populateObserverDropdown();
     renderSightings();
