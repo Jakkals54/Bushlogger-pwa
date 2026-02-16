@@ -63,14 +63,15 @@ document.addEventListener("DOMContentLoaded", function() {
     // OBSERVER DROPDOWN HISTORY
     // --------------------------
     function populateObserverDropdown() {
-        observerInput.innerHTML = ""; // clear
-        observers.forEach(name => {
-            const option = document.createElement("option");
-            option.value = name;
-            option.textContent = name;
-            observerInput.appendChild(option);
-        });
-    }
+    const datalist = document.getElementById("observerList");
+    datalist.innerHTML = ""; // clear existing
+
+    observers.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        datalist.appendChild(option);
+    });
+}
 
     function saveObserver(name) {
         observers = observers.filter(o => o !== name);
