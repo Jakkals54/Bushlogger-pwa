@@ -1,4 +1,4 @@
-const CACHE_NAME = "bushlogger-cache-v1";
+const CACHE_NAME = "bushlogger-cache-v2";
 const urlsToCache = [
   "./",
   "index.html",
