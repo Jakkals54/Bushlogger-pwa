@@ -6,13 +6,43 @@ document.addEventListener("DOMContentLoaded", function () {
     const notesInput = document.getElementById("notes");
     const logButton = document.getElementById("logButton");
     const sightingsList = document.getElementById("sightingsList");
-    const shareButton = document.getElementById("shareButton");
+
+    let currentCoords = null;
 
     let sightings = JSON.parse(localStorage.getItem("sightings")) || [];
     let observers = JSON.parse(localStorage.getItem("recentObservers")) || [];
 
     // =========================
-    // Populate Observer Dropdown
+    // GPS Capture
+    // =========================
+    function captureGPS() {
+        if (!navigator.geolocation) {
+            alert("GPS not supported");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                currentCoords =
+                    position.coords.latitude.toFixed(6) + ", " +
+                    position.coords.longitude.toFixed(6);
+
+                alert("GPS captured!");
+            },
+            () => {
+                alert("Unable to retrieve GPS");
+            }
+        );
+    }
+
+    // Add GPS button dynamically
+    const gpsButton = document.createElement("button");
+    gpsButton.textContent = "Capture GPS";
+    gpsButton.addEventListener("click", captureGPS);
+    logButton.parentNode.insertBefore(gpsButton, logButton);
+
+    // =========================
+    // Observer Dropdown
     // =========================
     function populateObserverDropdown() {
         observerSelect.innerHTML = '<option value="">Select recent observer</option>';
@@ -26,23 +56,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     observerSelect.addEventListener("change", function () {
-        if (observerSelect.value !== "") {
-            observerInput.value = observerSelect.value;
-        }
+        observerInput.value = observerSelect.value;
     });
 
-    // =========================
-    // Save Observer (max 5)
-    // =========================
     function saveObserver(name) {
-        if (!name) return;
-
         observers = observers.filter(o => o !== name);
         observers.unshift(name);
-
-        if (observers.length > 5) {
-            observers = observers.slice(0, 5);
-        }
+        observers = observers.slice(0, 5);
 
         localStorage.setItem("recentObservers", JSON.stringify(observers));
         populateObserverDropdown();
@@ -55,32 +75,58 @@ document.addEventListener("DOMContentLoaded", function () {
         sightingsList.innerHTML = "";
 
         sightings.forEach((sighting, index) => {
+
             const li = document.createElement("li");
 
             li.innerHTML = `
                 <strong>${sighting.species}</strong><br>
                 Observer: ${sighting.observer}<br>
                 Notes: ${sighting.notes || "—"}<br>
+                GPS: ${sighting.coords || "Not captured"}<br>
                 Date: ${new Date(sighting.date).toLocaleString()}
             `;
 
+            // Share Button (per sighting)
+            const shareBtn = document.createElement("button");
+            shareBtn.textContent = "Share";
+            shareBtn.addEventListener("click", function () {
+
+                const text =
+                    `Species: ${sighting.species}\n` +
+                    `Observer: ${sighting.observer}\n` +
+                    `Notes: ${sighting.notes || ""}\n` +
+                    `GPS: ${sighting.coords || ""}`;
+
+                if (navigator.share) {
+                    navigator.share({
+                        title: "Bush Logger Sighting",
+                        text: text
+                    });
+                } else {
+                    navigator.clipboard.writeText(text);
+                    alert("Copied to clipboard!");
+                }
+            });
+
+            // Delete Button
             const deleteBtn = document.createElement("button");
             deleteBtn.textContent = "Delete";
             deleteBtn.className = "delete-btn";
-
             deleteBtn.addEventListener("click", function () {
                 sightings.splice(index, 1);
                 localStorage.setItem("sightings", JSON.stringify(sightings));
                 renderSightings();
             });
 
+            li.appendChild(shareBtn);
             li.appendChild(deleteBtn);
+
             sightingsList.appendChild(li);
         });
     }
 
     // =========================
-    // Log New Sighting
+    // Log Sighting
     // =========================
     logButton.addEventListener("click", function () {
 
@@ -89,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const notes = notesInput.value.trim();
 
         if (!observer || !species) {
-            alert("Observer and Species are required.");
+            alert("Observer and Species required");
             return;
         }
 
@@ -97,6 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
             observer,
             species,
             notes,
+            coords: currentCoords,
             date: new Date().toISOString()
         };
 
@@ -108,31 +155,11 @@ document.addEventListener("DOMContentLoaded", function () {
         observerInput.value = "";
         speciesInput.value = "";
         notesInput.value = "";
+        currentCoords = null;
 
         renderSightings();
     });
 
-    // =========================
-    // Share Function
-    // =========================
-    shareButton.addEventListener("click", function () {
-
-        const shareText = sightings.map(s =>
-            `${s.species} (Observer: ${s.observer})`
-        ).join("\n");
-
-        if (navigator.share) {
-            navigator.share({
-                title: "Bush Logger Sightings",
-                text: shareText
-            });
-        } else {
-            navigator.clipboard.writeText(shareText);
-            alert("Copied to clipboard!");
-        }
-    });
-
-    // Initial Load
     populateObserverDropdown();
     renderSightings();
 
