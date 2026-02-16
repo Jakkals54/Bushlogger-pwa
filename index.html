@@ -2,59 +2,80 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bush Logger</title>
-
-    <!-- Mobile Responsive -->
+    <title>Bush Logger Field Tool</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2e7d32">
-
-    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<header>
     <h1>🌿 Bush Logger</h1>
+    <button id="settingsToggle">⚙️</button>
+</header>
 
-    <!-- Log Section -->
-    <section>
-        <h2>Log a Sighting</h2>
+<!-- Slide Settings Panel -->
+<div id="settingsPanel" class="settings-panel">
 
-        <label>Observer</label>
-        <input type="text" id="observer" placeholder="Enter observer name">
+    <h2>Field Modules</h2>
 
-        <label>Recent Observers</label>
-        <select id="observerSelect">
-            <option value="">Select recent observer</option>
-        </select>
+    <label>
+        <input type="checkbox" id="togglePhoto">
+        Enable Photo Upload
+    </label>
 
-        <label>Species</label>
-        <input type="text" id="species" placeholder="Enter species name">
+    <label>
+        <input type="checkbox" id="toggleSpeciesList">
+        Enable Species Master List
+    </label>
 
-        <label>Notes</label>
-        <textarea id="notes" placeholder="Optional notes"></textarea>
+    <label>
+        <input type="checkbox" id="toggleEdit">
+        Enable Edit Mode
+    </label>
 
-        <button id="logButton">Log Sighting</button>
-    </section>
+    <button id="closeSettings">Close</button>
 
-    <!-- Sightings List -->
-    <section>
+</div>
+
+<main>
+
+<section>
+    <h2>Log Sighting</h2>
+
+    <label>Observer</label>
+    <input type="text" id="observer">
+
+    <label>Species</label>
+    <input type="text" id="species">
+
+    <!-- Species master list placeholder -->
+    <div id="speciesMasterContainer" style="display:none;">
+        <label>Select Species</label>
+        <select id="speciesMaster"></select>
+    </div>
+
+    <label>Notes</label>
+    <textarea id="notes"></textarea>
+
+    <!-- Photo placeholder -->
+    <div id="photoContainer" style="display:none;">
+        <label>Photo</label>
+        <input type="file" id="photoInput" accept="image/*">
+    </div>
+
+    <button id="logButton">Log Sighting</button>
+
+</section>
+
+<section>
     <h2>Logged Sightings</h2>
     <ul id="sightingsList"></ul>
-    <button id="exportButton">Export to CSV</button>
-    </section>
+    <button id="exportButton">Export CSV</button>
+</section>
 
-    <!-- Share -->
-    <section>
-        <button id="shareButton">Share Sightings</button>
-    </section>
+</main>
 
-    <!-- App Script -->
-    <script src="app.js"></script>
-
-       
+<script src="app.js"></script>
 
 </body>
 </html>
