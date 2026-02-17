@@ -7,9 +7,9 @@ const BushloggerApp = (() => {
 
     const elements = {};
 
-    // ==============================
-    // INITIALIZE
-    // ==============================
+    // ------------------------
+    // Initialize
+    // ------------------------
     function init() {
         cacheElements();
         loadFromStorage();
@@ -27,9 +27,9 @@ const BushloggerApp = (() => {
         elements.sightingsList = document.getElementById("sightingsList");
     }
 
-    // ==============================
-    // STORAGE
-    // ==============================
+    // ------------------------
+    // Storage
+    // ------------------------
     function loadFromStorage() {
         state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
     }
@@ -38,14 +38,12 @@ const BushloggerApp = (() => {
         localStorage.setItem("bushlogger_sightings", JSON.stringify(state.sightings));
     }
 
-    // ==============================
-    // OBSERVERS
-    // ==============================
+    // ------------------------
+    // Observers
+    // ------------------------
     function populateObservers() {
         const observers = ["Frans", "Guest"];
-
         elements.observer.innerHTML = "";
-
         observers.forEach(name => {
             const option = document.createElement("option");
             option.value = name;
@@ -54,35 +52,28 @@ const BushloggerApp = (() => {
         });
     }
 
-    // ==============================
-    // GPS (Desktop Safe v1)
-    // ==============================
+    // ------------------------
+    // GPS (Desktop Safe)
+    // ------------------------
     function getGPS() {
-        return {
-            lat: "-25.000000",
-            lon: "31.000000"
-        };
+        return { lat: "-25.000000", lon: "31.000000" };
     }
 
-    // ==============================
-    // EVENTS
-    // ==============================
+    // ------------------------
+    // Events
+    // ------------------------
     function bindEvents() {
         elements.logButton.addEventListener("click", handleLog);
         elements.exportButton.addEventListener("click", exportCSV);
         elements.sightingsList.addEventListener("click", handleListClick);
     }
 
-    // ==============================
-    // LOGIC
-    // ==============================
+    // ------------------------
+    // Log Sighting
+    // ------------------------
     function handleLog() {
-
         const species = elements.species.value.trim();
-        if (!species) {
-            alert("Enter species.");
-            return;
-        }
+        if (!species) { alert("Enter species."); return; }
 
         const observer = elements.observer.value;
         const notes = elements.notes.value.trim();
@@ -91,10 +82,9 @@ const BushloggerApp = (() => {
         const date = now.toISOString().split("T")[0];
         const time = now.toTimeString().split(" ")[0];
 
-        // Duplicate check (same species same date)
+        // Duplicate check (same species, same date)
         const duplicateIndex = state.sightings.findIndex(s =>
-            s.species.toLowerCase() === species.toLowerCase() &&
-            s.date === date
+            s.species.toLowerCase() === species.toLowerCase() && s.date === date
         );
 
         if (duplicateIndex !== -1 && state.editIndex === null) {
@@ -102,21 +92,12 @@ const BushloggerApp = (() => {
                 "Species already logged today.\nReplace previous entry?"
             );
             if (!confirmReplace) return;
-
             state.sightings.splice(duplicateIndex, 1);
         }
 
         const gps = getGPS();
 
-        const entry = {
-            date,
-            time,
-            observer,
-            species,
-            notes,
-            lat: gps.lat,
-            lon: gps.lon
-        };
+        const entry = { date, time, observer, species, notes, lat: gps.lat, lon: gps.lon };
 
         if (state.editIndex !== null) {
             state.sightings[state.editIndex] = entry;
@@ -131,10 +112,8 @@ const BushloggerApp = (() => {
     }
 
     function handleListClick(e) {
-
         const index = e.target.dataset.index;
         const action = e.target.dataset.action;
-
         if (index === undefined) return;
 
         if (action === "delete") {
@@ -152,21 +131,18 @@ const BushloggerApp = (() => {
         }
     }
 
-    // ==============================
-    // RENDER
-    // ==============================
+    // ------------------------
+    // Render
+    // ------------------------
     function render() {
         elements.sightingsList.innerHTML = "";
-
         state.sightings.forEach((s, index) => {
             const li = document.createElement("li");
-
             li.innerHTML = `
                 ${s.date} | ${s.time} | ${s.observer} | ${s.species}
                 <button data-action="edit" data-index="${index}">Edit</button>
                 <button data-action="delete" data-index="${index}">Delete</button>
             `;
-
             elements.sightingsList.appendChild(li);
         });
     }
@@ -176,32 +152,25 @@ const BushloggerApp = (() => {
         elements.notes.value = "";
     }
 
-    // ==============================
-    // EXPORT
-    // ==============================
+    // ------------------------
+    // Export CSV
+    // ------------------------
     function exportCSV() {
-
-        if (state.sightings.length === 0) {
-            alert("No sightings to export.");
-            return;
-        }
+        if (state.sightings.length === 0) { alert("No sightings to export."); return; }
 
         let csv = "Date,Time,Observer,Species,Notes,Latitude,Longitude\n";
-
         state.sightings.forEach(s => {
             csv += `${s.date},${s.time},${s.observer},${s.species},"${s.notes}",${s.lat},${s.lon}\n`;
         });
 
         const blob = new Blob([csv], { type: "text/csv" });
         const url = URL.createObjectURL(blob);
-
         const a = document.createElement("a");
         a.href = url;
         a.download = "bushlogger_export.csv";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-
         URL.revokeObjectURL(url);
     }
 
