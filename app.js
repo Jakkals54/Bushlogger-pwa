@@ -110,13 +110,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     renderSightings();
 
-    // --------------------------
-    // GPS CAPTURE
-    // --------------------------
-       // --------------------------
+    
 // GPS CAPTURE (Desktop Safe)
 // --------------------------
-function getGPS() {
+    function getGPS() {
     // Desktop testing mode – always return fixed coordinates
     return Promise.resolve({
         lat: "-25.000000",
