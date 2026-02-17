@@ -119,7 +119,6 @@ document.addEventListener("DOMContentLoaded", function() {
         lat: "-25.000000",
         lon: "31.000000"
     });
-}
     }
 
     // --------------------------
