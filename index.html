@@ -3,20 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BushLogger - PWA</title>
+<title>BushLogger - PWA v1.2</title>
 <link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
-<h1>🐦 BushLogger – Stable v1 FNelson</h1>
+<h1>🐦 BushLogger – Structured Summary v1.2 FNelson</h1>
 
+<!-- -------- Log a Sighting -------- -->
 <section>
   <h2>Log a Sighting</h2>
 
   <label for="observer">Observer</label>
-<input id="observer" type="text" list="observerList" placeholder="Type or select observer">
-<datalist id="observerList"></datalist>
+  <input id="observer" type="text" list="observerList" placeholder="Type or select observer">
+  <datalist id="observerList"></datalist>
 
   <label for="species">Species</label>
   <input type="text" id="species" placeholder="Species Name">
@@ -27,10 +28,33 @@
   <button id="logButton">💾 Log Sighting</button>
 </section>
 
+<!-- -------- Summary Table & Actions -------- -->
 <section>
-  <h2>Local Sightings</h2>
-  <ul id="sightingsList"></ul>
-  <button id="exportButton">📁 Export CSV</button>
+  <h2>Local Sightings Summary</h2>
+
+  <table id="summaryTable" border="1">
+    <thead>
+      <tr>
+        <th>Select</th>
+        <th>Listing No</th>
+        <th>Date</th>
+        <th>Species</th>
+        <th>Observer</th>
+        <th>GPS</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody id="summaryBody"></tbody>
+  </table>
+
+  <label for="actionSelector">Action:</label>
+  <select id="actionSelector">
+    <option value="">Select Action</option>
+    <option value="edit">Edit</option>
+    <option value="delete">Delete</option>
+    <option value="export">Export</option>
+  </select>
+  <button id="actionButton">Apply</button>
 </section>
 
 <script src="app.js"></script>
