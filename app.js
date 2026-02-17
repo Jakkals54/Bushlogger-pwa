@@ -1,15 +1,8 @@
 const BushloggerApp = (() => {
 
-    const state = {
-        sightings: [],
-        editIndex: null
-    };
-
+    const state = { sightings: [], editIndex: null, observers: ["Frans", "Guest"] };
     const elements = {};
 
-    // ------------------------
-    // Initialize
-    // ------------------------
     function init() {
         cacheElements();
         loadFromStorage();
@@ -20,6 +13,7 @@ const BushloggerApp = (() => {
 
     function cacheElements() {
         elements.observer = document.getElementById("observer");
+        elements.datalist = document.getElementById("observerList");
         elements.species = document.getElementById("species");
         elements.notes = document.getElementById("notes");
         elements.logButton = document.getElementById("logButton");
@@ -27,9 +21,6 @@ const BushloggerApp = (() => {
         elements.sightingsList = document.getElementById("sightingsList");
     }
 
-    // ------------------------
-    // Storage
-    // ------------------------
     function loadFromStorage() {
         state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
     }
@@ -38,51 +29,38 @@ const BushloggerApp = (() => {
         localStorage.setItem("bushlogger_sightings", JSON.stringify(state.sightings));
     }
 
-    // ------------------------
-    // Observers
-    // ------------------------
     function populateObservers() {
-        const observers = ["Frans", "Guest"];
-        elements.observer.innerHTML = "";
-        observers.forEach(name => {
+        elements.datalist.innerHTML = "";
+        state.observers.forEach(name => {
             const option = document.createElement("option");
             option.value = name;
-            option.textContent = name;
-            elements.observer.appendChild(option);
+            elements.datalist.appendChild(option);
         });
     }
 
-    // ------------------------
-    // GPS (Desktop Safe)
-    // ------------------------
-    function getGPS() {
-        return { lat: "-25.000000", lon: "31.000000" };
-    }
+    function getGPS() { return { lat: "-25.000000", lon: "31.000000" }; }
 
-    // ------------------------
-    // Events
-    // ------------------------
     function bindEvents() {
         elements.logButton.addEventListener("click", handleLog);
         elements.exportButton.addEventListener("click", exportCSV);
         elements.sightingsList.addEventListener("click", handleListClick);
     }
 
-    // ------------------------
-    // Log Sighting
-    // ------------------------
     function handleLog() {
         const species = elements.species.value.trim();
         if (!species) { alert("Enter species."); return; }
 
-        const observer = elements.observer.value;
-        const notes = elements.notes.value.trim();
+        const observer = elements.observer.value.trim() || "Guest";
+        if (!state.observers.includes(observer)) {
+            state.observers.push(observer);
+            populateObservers();
+        }
 
+        const notes = elements.notes.value.trim();
         const now = new Date();
         const date = now.toISOString().split("T")[0];
         const time = now.toTimeString().split(" ")[0];
 
-        // Duplicate check (same species, same date)
         const duplicateIndex = state.sightings.findIndex(s =>
             s.species.toLowerCase() === species.toLowerCase() && s.date === date
         );
@@ -96,7 +74,6 @@ const BushloggerApp = (() => {
         }
 
         const gps = getGPS();
-
         const entry = { date, time, observer, species, notes, lat: gps.lat, lon: gps.lon };
 
         if (state.editIndex !== null) {
@@ -131,9 +108,6 @@ const BushloggerApp = (() => {
         }
     }
 
-    // ------------------------
-    // Render
-    // ------------------------
     function render() {
         elements.sightingsList.innerHTML = "";
         state.sightings.forEach((s, index) => {
@@ -150,13 +124,11 @@ const BushloggerApp = (() => {
     function clearForm() {
         elements.species.value = "";
         elements.notes.value = "";
+        elements.observer.value = "";
     }
 
-    // ------------------------
-    // Export CSV
-    // ------------------------
     function exportCSV() {
-        if (state.sightings.length === 0) { alert("No sightings to export."); return; }
+        if (!state.sightings.length) { alert("No sightings to export."); return; }
 
         let csv = "Date,Time,Observer,Species,Notes,Latitude,Longitude\n";
         state.sightings.forEach(s => {
