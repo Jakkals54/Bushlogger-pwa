@@ -40,6 +40,38 @@ const BushloggerApp = (() => {
         });
     }
 
+    //-----------------------GPS-----------------------------
+    const gpsToggle = document.getElementById("gpsToggle");
+
+function getGPS() {
+    return new Promise(resolve => {
+        if (!gpsToggle.checked)
+            
+        {
+            
+    //------------ GPS disabled → fallback coordinates-------
+            resolve({ lat: "-25.000000", lon: "31.000000" });
+            return;
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                pos => resolve({
+                    lat: pos.coords.latitude.toFixed(6),
+                    lon: pos.coords.longitude.toFixed(6)
+                }),
+                () => {
+                    console.warn("GPS failed. Using fallback coordinates.");
+                    resolve({ lat: "-25.000000", lon: "31.000000" });
+                },
+                { enableHighAccuracy: true }
+            );
+        } else {
+            resolve({ lat: "-25.000000", lon: "31.000000" });
+        }
+    });
+}
+
     function getGPS() { return { lat:"-25.000000", lon:"31.000000" }; }
 
     function bindEvents() {
