@@ -1,6 +1,6 @@
 const BushloggerApp = (() => {
 
-    const state = { sightings: [], editIndex: null, observers: ["Frans", "Guest"] };
+    const state = { sightings: [], editIndex: null, observers: ["Frans","Guest"] };
     const elements = {};
 
     function init() {
@@ -17,8 +17,9 @@ const BushloggerApp = (() => {
         elements.species = document.getElementById("species");
         elements.notes = document.getElementById("notes");
         elements.logButton = document.getElementById("logButton");
-        elements.exportButton = document.getElementById("exportButton");
-        elements.sightingsList = document.getElementById("sightingsList");
+        elements.summaryBody = document.getElementById("summaryBody");
+        elements.actionSelector = document.getElementById("actionSelector");
+        elements.actionButton = document.getElementById("actionButton");
     }
 
     function loadFromStorage() {
@@ -38,14 +39,14 @@ const BushloggerApp = (() => {
         });
     }
 
-    function getGPS() { return { lat: "-25.000000", lon: "31.000000" }; }
+    function getGPS() { return { lat:"-25.000000", lon:"31.000000" }; }
 
     function bindEvents() {
         elements.logButton.addEventListener("click", handleLog);
-        elements.exportButton.addEventListener("click", exportCSV);
-        elements.sightingsList.addEventListener("click", handleListClick);
+        elements.actionButton.addEventListener("click", handleAction);
     }
 
+    // ------------------------ LOGGING ------------------------
     function handleLog() {
         const species = elements.species.value.trim();
         if (!species) { alert("Enter species."); return; }
@@ -61,16 +62,13 @@ const BushloggerApp = (() => {
         const date = now.toISOString().split("T")[0];
         const time = now.toTimeString().split(" ")[0];
 
-        const duplicateIndex = state.sightings.findIndex(s =>
+        const duplicateIndex = state.sightings.findIndex(s => 
             s.species.toLowerCase() === species.toLowerCase() && s.date === date
         );
-
         if (duplicateIndex !== -1 && state.editIndex === null) {
-            const confirmReplace = confirm(
-                "Species already logged today.\nReplace previous entry?"
-            );
+            const confirmReplace = confirm("Species already logged today.\nReplace previous entry?");
             if (!confirmReplace) return;
-            state.sightings.splice(duplicateIndex, 1);
+            state.sightings.splice(duplicateIndex,1);
         }
 
         const gps = getGPS();
@@ -88,54 +86,73 @@ const BushloggerApp = (() => {
         clearForm();
     }
 
-    function handleListClick(e) {
-        const index = e.target.dataset.index;
-        const action = e.target.dataset.action;
-        if (index === undefined) return;
-
-        if (action === "delete") {
-            state.sightings.splice(index, 1);
-            saveToStorage();
-            render();
-        }
-
-        if (action === "edit") {
-            const entry = state.sightings[index];
-            elements.species.value = entry.species;
-            elements.notes.value = entry.notes;
-            elements.observer.value = entry.observer;
-            state.editIndex = index;
-        }
-    }
-
-    function render() {
-        elements.sightingsList.innerHTML = "";
-        state.sightings.forEach((s, index) => {
-            const li = document.createElement("li");
-            li.innerHTML = `
-                ${s.date} | ${s.time} | ${s.observer} | ${s.species}
-                <button data-action="edit" data-index="${index}">Edit</button>
-                <button data-action="delete" data-index="${index}">Delete</button>
-            `;
-            elements.sightingsList.appendChild(li);
-        });
-    }
-
     function clearForm() {
         elements.species.value = "";
         elements.notes.value = "";
         elements.observer.value = "";
     }
 
-    function exportCSV() {
-        if (!state.sightings.length) { alert("No sightings to export."); return; }
+    // ------------------------ RENDER SUMMARY ------------------------
+    function render() {
+        elements.summaryBody.innerHTML = "";
+        state.sightings.forEach((s,index)=>{
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><input type="radio" name="selectedSighting" data-index="${index}"></td>
+                <td>${index+1}</td>
+                <td>${s.date}</td>
+                <td>${s.species}</td>
+                <td>${s.observer}</td>
+                <td>${s.lat}, ${s.lon}</td>
+                <td>${s.notes}</td>
+            `;
+            elements.summaryBody.appendChild(tr);
+        });
+    }
+
+    // ------------------------ ACTION HANDLER ------------------------
+    function handleAction() {
+        const action = elements.actionSelector.value;
+        const selectedRadio = document.querySelector('input[name="selectedSighting"]:checked');
+        if (!selectedRadio) { alert("Select a sighting first."); return; }
+        const index = parseInt(selectedRadio.dataset.index);
+
+        if (action === "edit") {
+            editSighting(index);
+        } else if (action === "delete") {
+            deleteSighting(index);
+        } else if (action === "export") {
+            exportCSV([state.sightings[index]]);
+        }
+    }
+
+    function editSighting(index) {
+        const s = state.sightings[index];
+        elements.species.value = s.species;
+        elements.notes.value = s.notes;
+        elements.observer.value = s.observer;
+        state.editIndex = index;
+    }
+
+    function deleteSighting(index) {
+        if (confirm("Delete this sighting?")) {
+            state.sightings.splice(index,1);
+            saveToStorage();
+            render(); // re-numbering Listing No automatically
+        }
+    }
+
+    // ------------------------ CSV EXPORT ------------------------
+    function exportCSV(list=null) {
+        const arr = list || state.sightings;
+        if (!arr.length) { alert("No sightings to export."); return; }
 
         let csv = "Date,Time,Observer,Species,Notes,Latitude,Longitude\n";
-        state.sightings.forEach(s => {
+        arr.forEach(s => {
             csv += `${s.date},${s.time},${s.observer},${s.species},"${s.notes}",${s.lat},${s.lon}\n`;
         });
 
-        const blob = new Blob([csv], { type: "text/csv" });
+        const blob = new Blob([csv],{type:"text/csv"});
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
