@@ -22,6 +22,8 @@ const BushloggerApp = (() => {
         elements.actionButton = document.getElementById("actionButton");
     }
 
+    console.log("summaryBody element:", elements.summaryBody);
+
     function loadFromStorage() {
         state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
     }
