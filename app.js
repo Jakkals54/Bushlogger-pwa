@@ -20,6 +20,7 @@ const BushloggerApp = (() => {
         elements.summaryBody = document.getElementById("summaryBody");
         elements.actionSelector = document.getElementById("actionSelector");
         elements.actionButton = document.getElementById("actionButton");
+        elements.selectAll = document.getElementById("selectAll");
     }
 
     function loadFromStorage() {
@@ -44,6 +45,7 @@ const BushloggerApp = (() => {
     function bindEvents() {
         elements.logButton.addEventListener("click", handleLog);
         elements.actionButton.addEventListener("click", handleAction);
+        elements.selectAll.addEventListener("change", toggleSelectAll);
     }
 
     // ------------------------ LOGGING ------------------------
@@ -96,12 +98,12 @@ const BushloggerApp = (() => {
 
     // ------------------------ RENDER SUMMARY ------------------------
     function render() {
-        if (!elements.summaryBody) return; // safety
+        if (!elements.summaryBody) return; 
         elements.summaryBody.innerHTML = "";
         state.sightings.forEach((s,index)=>{
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td><input type="radio" name="selectedSighting" data-index="${index}"></td>
+                <td><input type="checkbox" class="selectSighting" data-index="${index}"></td>
                 <td>${index+1}</td>
                 <td>${s.date}</td>
                 <td>${s.species}</td>
@@ -111,21 +113,30 @@ const BushloggerApp = (() => {
             `;
             elements.summaryBody.appendChild(tr);
         });
+        elements.selectAll.checked = false; // reset select all
+    }
+
+    // ------------------------ SELECT ALL ------------------------
+    function toggleSelectAll() {
+        const checkboxes = document.querySelectorAll('.selectSighting');
+        checkboxes.forEach(cb => cb.checked = elements.selectAll.checked);
     }
 
     // ------------------------ ACTION HANDLER ------------------------
     function handleAction() {
         const action = elements.actionSelector.value;
-        const selectedRadio = document.querySelector('input[name="selectedSighting"]:checked');
-        if (!selectedRadio) { alert("Select a sighting first."); return; }
-        const index = parseInt(selectedRadio.dataset.index);
+        const selectedCheckboxes = document.querySelectorAll('.selectSighting:checked');
+        if (!selectedCheckboxes.length) { alert("Select at least one sighting."); return; }
+        const indices = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.index));
 
         if (action === "edit") {
-            editSighting(index);
+            if (indices.length > 1) { alert("Edit only one sighting at a time."); return; }
+            editSighting(indices[0]);
         } else if (action === "delete") {
-            deleteSighting(index);
+            deleteSightings(indices);
         } else if (action === "export") {
-            exportCSV([state.sightings[index]]);
+            const list = indices.map(i => state.sightings[i]);
+            exportCSV(list);
         }
     }
 
@@ -137,9 +148,10 @@ const BushloggerApp = (() => {
         state.editIndex = index;
     }
 
-    function deleteSighting(index) {
-        if (confirm("Delete this sighting?")) {
-            state.sightings.splice(index,1);
+    function deleteSightings(indices) {
+        if (confirm("Delete selected sightings?")) {
+            // Remove in reverse order to avoid index shift
+            indices.sort((a,b)=>b-a).forEach(i => state.sightings.splice(i,1));
             saveToStorage();
             render(); // Listing No recalculated
         }
