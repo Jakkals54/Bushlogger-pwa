@@ -3,72 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BushLogger – Field Logger</title>
+<title>BushLogger - PWA</title>
 <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
 </head>
 <body>
 
-<header>
-    <h1>🌿 BushLogger</h1>
-    <button id="settingsToggle">⚙️</button>
-</header>
+<h1>🐦 BushLogger – Stable v1</h1>
 
-<!-- Slide-out Settings Panel -->
-<div id="settingsPanel" class="settings-panel">
-    <h2>Field Modules</h2>
-
-    <label>
-        <input type="checkbox" id="togglePhoto">
-        Enable Photo Upload
-    </label>
-
-    <label>
-        <input type="checkbox" id="toggleSpeciesList">
-        Enable Species Master List
-    </label>
-
-    <label>
-        <input type="checkbox" id="toggleEdit">
-        Enable Edit Mode
-    </label>
-
-    <button id="closeSettings">Close</button>
-</div>
-
-<main>
 <section>
-    <h2>Log Sighting</h2>
+  <h2>Log a Sighting</h2>
 
-    <label for="observer">Observer</label>
-<select id="observer"></select>
+  <label for="observer">Observer</label>
+  <select id="observer"></select>
 
-        <label>Species</label>
-    <input type="text" id="species">
+  <label for="species">Species</label>
+  <input type="text" id="species" placeholder="Species Name">
 
-    <!-- Optional Species Master -->
-    <div id="speciesMasterContainer" style="display:none;">
-        <label>Select Species</label>
-        <select id="speciesMaster"></select>
-    </div>
+  <label for="notes">Notes</label>
+  <textarea id="notes" placeholder="Notes"></textarea>
 
-    <label>Notes</label>
-    <textarea id="notes"></textarea>
-
-    <!-- Optional Photo -->
-    <div id="photoContainer" style="display:none;">
-        <label>Photo</label>
-        <input type="file" id="photoInput" accept="image/*">
-    </div>
-
-    <button id="logButton">Log Sighting</button>
+  <button id="logButton">💾 Log Sighting</button>
 </section>
 
 <section>
-    <h2>Logged Sightings</h2>
-    <ul id="sightingsList"></ul>
-    <button id="exportButton">Export CSV</button>
+  <h2>Local Sightings</h2>
+  <ul id="sightingsList"></ul>
+  <button id="exportButton">📁 Export CSV</button>
 </section>
-</main>
 
 <script src="app.js"></script>
 </body>
