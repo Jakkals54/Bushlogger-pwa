@@ -22,8 +22,6 @@ const BushloggerApp = (() => {
         elements.actionButton = document.getElementById("actionButton");
     }
 
-    console.log("summaryBody element:", elements.summaryBody);
-
     function loadFromStorage() {
         state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
     }
@@ -64,11 +62,13 @@ const BushloggerApp = (() => {
         const date = now.toISOString().split("T")[0];
         const time = now.toTimeString().split(" ")[0];
 
+        // Safe duplicate check
         const duplicateIndex = state.sightings.findIndex(s => 
             s.species.toLowerCase() === species.toLowerCase() && s.date === date
         );
+
         if (duplicateIndex !== -1 && state.editIndex === null) {
-            const confirmReplace = confirm("Species already logged today.\nReplace previous entry?");
+            const confirmReplace = confirm(`Species "${species}" already logged today at listing ${duplicateIndex+1}.\nReplace previous entry?`);
             if (!confirmReplace) return;
             state.sightings.splice(duplicateIndex,1);
         }
@@ -96,6 +96,7 @@ const BushloggerApp = (() => {
 
     // ------------------------ RENDER SUMMARY ------------------------
     function render() {
+        if (!elements.summaryBody) return; // safety
         elements.summaryBody.innerHTML = "";
         state.sightings.forEach((s,index)=>{
             const tr = document.createElement("tr");
@@ -140,7 +141,7 @@ const BushloggerApp = (() => {
         if (confirm("Delete this sighting?")) {
             state.sightings.splice(index,1);
             saveToStorage();
-            render(); // re-numbering Listing No automatically
+            render(); // Listing No recalculated
         }
     }
 
