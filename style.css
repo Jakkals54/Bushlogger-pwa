@@ -1,117 +1,75 @@
-/* =========================
-   GENERAL LAYOUT
-========================= */
-
+/* -------------------------- General -------------------------- */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    margin: 0;
-    padding: 16px;
-    background-color: #f4f6f5;
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f5f5f5;
     color: #333;
 }
 
-main {
-    margin-top: 20px;
+h1, h2 {
+    color: #2a5d84;
 }
-
-h1 {
-    margin: 0;
-    font-size: 22px;
-}
-
-h2 {
-    margin-top: 0;
-}
-
-/* =========================
-   HEADER
-========================= */
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#settingsToggle {
-    font-size: 20px;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 6px;
-    background-color: #2e7d32;
-    color: white;
-    cursor: pointer;
-}
-
-/* =========================
-   SECTIONS
-========================= */
 
 section {
-    background: white;
-    padding: 16px;
+    background-color: #fff;
+    padding: 15px;
     margin-bottom: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* =========================
-   INPUTS
-========================= */
-
-input,
-textarea,
-select {
+/* -------------------------- Inputs -------------------------- */
+input[type=text], textarea, select {
     width: 100%;
-    padding: 12px;
-    margin-top: 6px;
-    margin-bottom: 12px;
-    font-size: 16px; /* prevents zoom on iPhone */
-    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 6px 0 12px 0;
     border: 1px solid #ccc;
+    border-radius: 4px;
     box-sizing: border-box;
 }
 
 textarea {
-    min-height: 80px;
     resize: vertical;
 }
 
-/* =========================
-   BUTTONS
-========================= */
-
+/* -------------------------- Buttons -------------------------- */
 button {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
-    background-color: #2e7d32;
+    background-color: #2a5d84;
     color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    font-size: 14px;
+    margin-top: 6px;
 }
 
 button:hover {
-    background-color: #256428;
+    background-color: #1e3f5a;
 }
 
-button:active {
-    background-color: #1b4d1f;
+/* -------------------------- Table -------------------------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
 }
 
-/* Delete button styling */
-.delete-btn {
-    background-color: #c62828;
+th, td {
+    text-align: left;
+    padding: 8px;
 }
 
-.delete-btn:hover {
-    background-color: #a61e1e;
+th {
+    background-color: #2a5d84;
+    color: white;
 }
 
-/* Slider Toggle */
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* -------------------------- GPS Slider -------------------------- */
 .switch {
   position: relative;
   display: inline-block;
@@ -153,61 +111,20 @@ input:checked + .slider:before {
   transform: translateX(22px);
 }
 
-/* =========================
-   SIGHTINGS LIST
-========================= */
-
-ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+/* GPS status label */
+#gpsStatus {
+    font-weight: bold;
+    color: #2a5d84;
 }
 
-li {
-    background: #ffffff;
-    padding: 12px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    font-size: 14px;
-}
+/* -------------------------- Responsive -------------------------- */
+@media screen and (max-width: 768px) {
+    table, th, td {
+        font-size: 12px;
+    }
 
-/* =========================
-   SETTINGS SLIDE PANEL
-========================= */
-
-.settings-panel {
-    position: fixed;
-    top: 0;
-    right: -300px;
-    width: 260px;
-    height: 100%;
-    background: white;
-    box-shadow: -3px 0 8px rgba(0,0,0,0.2);
-    padding: 20px;
-    transition: right 0.3s ease;
-    z-index: 1000;
-    overflow-y: auto;
-}
-
-.settings-panel.open {
-    right: 0;
-}
-
-.settings-panel h2 {
-    margin-top: 0;
-}
-
-.settings-panel label {
-    display: block;
-    margin-bottom: 15px;
-    font-size: 14px;
-}
-
-.settings-panel input[type="checkbox"] {
-    margin-right: 8px;
-}
-
-#closeSettings {
-    background-color: #555;
+    button {
+        width: 100%;
+        margin-top: 10px;
+    }
 }
