@@ -9,6 +9,7 @@ const BushloggerApp = (() => {
         populateObservers();
         bindEvents();
         render();
+        updateGPSStatus();
     }
 
     function cacheElements() {
@@ -21,6 +22,8 @@ const BushloggerApp = (() => {
         elements.actionSelector = document.getElementById("actionSelector");
         elements.actionButton = document.getElementById("actionButton");
         elements.selectAll = document.getElementById("selectAll");
+        elements.gpsToggle = document.getElementById("gpsToggle");
+        elements.gpsStatus = document.getElementById("gpsStatus");
     }
 
     function loadFromStorage() {
@@ -40,48 +43,45 @@ const BushloggerApp = (() => {
         });
     }
 
-    //-----------------------GPS-----------------------------
-    const gpsToggle = document.getElementById("gpsToggle");
-
-function getGPS() {
-    return new Promise(resolve => {
-        if (!gpsToggle.checked)
-            
-        {
-            
-    //------------ GPS disabled → fallback coordinates-------
-            resolve({ lat: "-25.000000", lon: "31.000000" });
-            return;
-        }
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                pos => resolve({
-                    lat: pos.coords.latitude.toFixed(6),
-                    lon: pos.coords.longitude.toFixed(6)
-                }),
-                () => {
-                    console.warn("GPS failed. Using fallback coordinates.");
-                    resolve({ lat: "-25.000000", lon: "31.000000" });
-                },
-                { enableHighAccuracy: true }
-            );
-        } else {
-            resolve({ lat: "-25.000000", lon: "31.000000" });
-        }
-    });
-}
-
-    function getGPS() { return { lat:"-25.000000", lon:"31.000000" }; }
-
     function bindEvents() {
         elements.logButton.addEventListener("click", handleLog);
         elements.actionButton.addEventListener("click", handleAction);
         elements.selectAll.addEventListener("change", toggleSelectAll);
+        elements.gpsToggle.addEventListener("change", updateGPSStatus);
+    }
+
+    function updateGPSStatus() {
+        elements.gpsStatus.textContent = elements.gpsToggle.checked ? "GPS ON" : "GPS OFF";
+    }
+
+    // ------------------------ GET GPS ------------------------
+    function getGPS() {
+        return new Promise(resolve => {
+            if (!elements.gpsToggle.checked) {
+                resolve({ lat:"-25.000000", lon:"31.000000" });
+                return;
+            }
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => resolve({
+                        lat: pos.coords.latitude.toFixed(6),
+                        lon: pos.coords.longitude.toFixed(6)
+                    }),
+                    () => {
+                        console.warn("GPS failed. Using fallback coordinates.");
+                        resolve({ lat:"-25.000000", lon:"31.000000" });
+                    },
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                resolve({ lat:"-25.000000", lon:"31.000000" });
+            }
+        });
     }
 
     // ------------------------ LOGGING ------------------------
-    function handleLog() {
+    async function handleLog() {
         const species = elements.species.value.trim();
         if (!species) { alert("Enter species."); return; }
 
@@ -96,7 +96,7 @@ function getGPS() {
         const date = now.toISOString().split("T")[0];
         const time = now.toTimeString().split(" ")[0];
 
-        // Safe duplicate check
+        // Duplicate check
         const duplicateIndex = state.sightings.findIndex(s => 
             s.species.toLowerCase() === species.toLowerCase() && s.date === date
         );
@@ -107,7 +107,7 @@ function getGPS() {
             state.sightings.splice(duplicateIndex,1);
         }
 
-        const gps = getGPS();
+        const gps = await getGPS();
         const entry = { date, time, observer, species, notes, lat: gps.lat, lon: gps.lon };
 
         if (state.editIndex !== null) {
@@ -130,7 +130,7 @@ function getGPS() {
 
     // ------------------------ RENDER SUMMARY ------------------------
     function render() {
-        if (!elements.summaryBody) return; 
+        if (!elements.summaryBody) return;
         elements.summaryBody.innerHTML = "";
         state.sightings.forEach((s,index)=>{
             const tr = document.createElement("tr");
@@ -145,7 +145,7 @@ function getGPS() {
             `;
             elements.summaryBody.appendChild(tr);
         });
-        elements.selectAll.checked = false; // reset select all
+        elements.selectAll.checked = false;
     }
 
     // ------------------------ SELECT ALL ------------------------
@@ -182,10 +182,9 @@ function getGPS() {
 
     function deleteSightings(indices) {
         if (confirm("Delete selected sightings?")) {
-            // Remove in reverse order to avoid index shift
             indices.sort((a,b)=>b-a).forEach(i => state.sightings.splice(i,1));
             saveToStorage();
-            render(); // Listing No recalculated
+            render();
         }
     }
 
