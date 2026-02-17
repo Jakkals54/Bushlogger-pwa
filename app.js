@@ -113,31 +113,16 @@ document.addEventListener("DOMContentLoaded", function() {
     // --------------------------
     // GPS CAPTURE
     // --------------------------
-        function getGPS() {
-        return Promise.resolve({ lat: "-25.000000", lon: "31.000000" });
-    }
-            // Check if on iPhone / Mobile device
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-            if (!navigator.geolocation || !isMobile) {
-                // Desktop fallback
-                console.warn("Using fallback GPS coordinates for desktop/testing.");
-                resolve({ lat: "-25.000000", lon: "31.000000" });
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                pos => resolve({
-                    lat: pos.coords.latitude.toFixed(6),
-                    lon: pos.coords.longitude.toFixed(6)
-                }),
-                () => {
-                    console.warn("GPS failed. Using fallback coordinates.");
-                    resolve({ lat: "-25.000000", lon: "31.000000" });
-                },
-                { enableHighAccuracy: true }
-            );
-        });
+       // --------------------------
+// GPS CAPTURE (Desktop Safe)
+// --------------------------
+function getGPS() {
+    // Desktop testing mode – always return fixed coordinates
+    return Promise.resolve({
+        lat: "-25.000000",
+        lon: "31.000000"
+    });
+}
     }
 
     // --------------------------
