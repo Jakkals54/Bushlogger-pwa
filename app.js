@@ -15,7 +15,7 @@ function init() {
 }
 
 function bindEvents() {
-    document.getElementById("logButton").addEventListener("click", logEntry);
+    document.getElementById("logButton").addEventListener("click", () => logEntry());
     document.getElementById("gpsToggle").addEventListener("change", updateGPS);
     document.getElementById("csvInput").addEventListener("change", loadCSV);
     document.getElementById("selectAll").addEventListener("change", toggleSelectAll);
