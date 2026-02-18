@@ -103,14 +103,22 @@ function loadChecklist(event) {
 
     reader.onload = e => {
 
-        const lines = e.target.result
-            .split(/\r?\n/)
-            .map(l => l.replace(/"/g, "").trim())
-            .filter(l => l.length > 0);
+    let text = e.target.result;
 
-        state.checklist = lines.slice(1); // replace memory
+    // Normalize line endings (Windows, Mac, iOS safe)
+    text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
-        renderChecklist();
+    const rows = text.split("\n")
+        .map(r => r.trim())
+        .filter(r => r.length > 0);
+
+    // Take first column only (handles comma-separated CSV)
+    state.checklist = rows.map(r => 
+        r.split(",")[0].replace(/"/g, "").trim()
+    );
+
+    renderChecklist();
+};
     };
 
     reader.readAsText(file);
