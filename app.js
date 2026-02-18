@@ -233,6 +233,13 @@ function handleAction() {
     else {
         alert("Choose an action.");
     }
+    else if (action === "exportAllCSV") {
+    exportCSV(state.sightings);
+}
+
+else if (action === "exportAllExcel") {
+    exportExcel(state.sightings);
+}
 }
 
 // ---------------- EDIT ----------------
