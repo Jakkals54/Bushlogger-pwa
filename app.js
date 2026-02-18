@@ -1,8 +1,15 @@
 const BushloggerApp = (() => {
 
-const state = { sightings: [], editIndex: null, observers: ["Guest"], checklist: [] };
+const state = {
+    sightings: [],
+    editIndex: null,
+    observers: ["Guest"],
+    checklist: []
+};
+
 const elements = {};
 
+// ---------------- INIT ----------------
 function init() {
     cacheElements();
     loadFromStorage();
@@ -26,8 +33,20 @@ function cacheElements() {
     elements.gpsStatus = document.getElementById("gpsStatus");
     elements.csvInput = document.getElementById("csvInput");
     elements.checklistContainer = document.getElementById("checklistContainer");
+    elements.selectedCount = document.getElementById("selectedCount");
 }
 
+function bindEvents() {
+    elements.logButton.addEventListener("click", () => handleLog());
+    elements.actionButton.addEventListener("click", handleAction);
+    elements.selectAll.addEventListener("change", toggleSelectAll);
+    elements.gpsToggle.addEventListener("change", updateGPSStatus);
+    elements.csvInput.addEventListener("change", handleCSVLoad);
+
+    document.addEventListener("change", updateSelectionState);
+}
+
+// ---------------- STORAGE ----------------
 function loadFromStorage() {
     state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
 }
@@ -36,6 +55,7 @@ function saveToStorage() {
     localStorage.setItem("bushlogger_sightings", JSON.stringify(state.sightings));
 }
 
+// ---------------- OBSERVERS ----------------
 function populateObservers() {
     elements.datalist.innerHTML = "";
     state.observers.forEach(name => {
@@ -45,19 +65,11 @@ function populateObservers() {
     });
 }
 
-function bindEvents() {
-    elements.logButton.addEventListener("click", handleLog);
-    elements.actionButton.addEventListener("click", handleAction);
-    elements.selectAll.addEventListener("change", toggleSelectAll);
-    elements.gpsToggle.addEventListener("change", updateGPSStatus);
-    elements.csvInput.addEventListener("change", handleCSVLoad);
-}
-
+// ---------------- GPS ----------------
 function updateGPSStatus() {
     elements.gpsStatus.textContent = elements.gpsToggle.checked ? "GPS ON" : "GPS OFF";
 }
 
-// ------------------------ GET GPS ------------------------
 function getGPS() {
     return new Promise(resolve => {
         if (!elements.gpsToggle.checked) {
@@ -80,12 +92,17 @@ function getGPS() {
     });
 }
 
-// ------------------------ LOGGING ------------------------
-async function handleLog(speciesOverride=null) {
+// ---------------- LOGGING ----------------
+async function handleLog(speciesOverride = null) {
+
     const species = (speciesOverride || elements.species.value.trim());
-    if (!species) { alert("Enter species/object."); return; }
+    if (!species) {
+        alert("Enter species/object.");
+        return;
+    }
 
     const observer = elements.observer.value.trim() || "Guest";
+
     if (!state.observers.includes(observer)) {
         state.observers.push(observer);
         populateObservers();
@@ -96,18 +113,31 @@ async function handleLog(speciesOverride=null) {
     const date = now.toISOString().split("T")[0];
     const time = now.toTimeString().split(" ")[0];
 
-    const duplicateIndex = state.sightings.findIndex(s => 
-        s.species.toLowerCase() === species.toLowerCase() && s.date === date
+    // Duplicate same day check
+    const duplicateIndex = state.sightings.findIndex(s =>
+        s.species.toLowerCase() === species.toLowerCase() &&
+        s.date === date
     );
 
     if (duplicateIndex !== -1 && state.editIndex === null) {
-        const confirmReplace = confirm(`Species "${species}" already logged today at listing ${duplicateIndex+1}.\nReplace previous entry?`);
+        const confirmReplace = confirm(
+            `Species "${species}" already logged today at listing ${duplicateIndex + 1}.\nReplace previous entry?`
+        );
         if (!confirmReplace) return;
-        state.sightings.splice(duplicateIndex,1);
+        state.sightings.splice(duplicateIndex, 1);
     }
 
     const gps = await getGPS();
-    const entry = { date, time, observer, species, notes, lat: gps.lat, lon: gps.lon };
+
+    const entry = {
+        date,
+        time,
+        observer,
+        species,
+        notes,
+        lat: gps.lat,
+        lon: gps.lon
+    };
 
     if (state.editIndex !== null) {
         state.sightings[state.editIndex] = entry;
@@ -118,24 +148,23 @@ async function handleLog(speciesOverride=null) {
 
     saveToStorage();
     render();
-    if (!speciesOverride) clearForm();
+    clearForm();
 }
 
 function clearForm() {
     elements.species.value = "";
     elements.notes.value = "";
-    elements.observer.value = "";
 }
 
-// ------------------------ RENDER SUMMARY ------------------------
+// ---------------- RENDER ----------------
 function render() {
-    if (!elements.summaryBody) return;
     elements.summaryBody.innerHTML = "";
-    state.sightings.forEach((s,index)=>{
+
+    state.sightings.forEach((s, index) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td><input type="checkbox" class="selectSighting" data-index="${index}"></td>
-            <td>${index+1}</td>
+            <td>${index + 1}</td>
             <td>${s.date}</td>
             <td>${s.species}</td>
             <td>${s.observer}</td>
@@ -144,122 +173,188 @@ function render() {
         `;
         elements.summaryBody.appendChild(tr);
     });
+
     elements.selectAll.checked = false;
+    updateSelectionState();
 }
 
-// ------------------------ SELECT ALL ------------------------
+// ---------------- SELECTION ----------------
 function toggleSelectAll() {
     const checkboxes = document.querySelectorAll('.selectSighting');
     checkboxes.forEach(cb => cb.checked = elements.selectAll.checked);
+    updateSelectionState();
 }
 
-// ------------------------ ACTION HANDLER ------------------------
+function updateSelectionState() {
+    const selected = document.querySelectorAll('.selectSighting:checked').length;
+
+    if (elements.selectedCount)
+        elements.selectedCount.textContent = `(${selected} selected)`;
+
+    elements.actionButton.disabled = selected === 0;
+}
+
+// ---------------- ACTION HANDLER ----------------
 function handleAction() {
+
     const action = elements.actionSelector.value;
     const selectedCheckboxes = document.querySelectorAll('.selectSighting:checked');
-    if (!selectedCheckboxes.length) { alert("Select at least one sighting."); return; }
-    const indices = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.index));
+
+    if (!selectedCheckboxes.length) {
+        alert("Select at least one sighting.");
+        return;
+    }
+
+    const indices = Array.from(selectedCheckboxes)
+        .map(cb => parseInt(cb.dataset.index));
 
     if (action === "edit") {
-        if (indices.length > 1) { alert("Edit only one sighting at a time."); return; }
+        if (indices.length > 1) {
+            alert("Edit only one sighting at a time.");
+            return;
+        }
         editSighting(indices[0]);
-    } else if (action === "delete") {
+    }
+
+    else if (action === "delete") {
         deleteSightings(indices);
-    } else if (action === "export") {
+    }
+
+    else if (action === "export") {
         const list = indices.map(i => state.sightings[i]);
         exportCSV(list);
-    } else if (action === "share") {
+    }
+
+    else if (action === "share") {
         const list = indices.map(i => state.sightings[i]);
         shareSightings(list);
     }
-}
 
-function editSighting(index) {
-    const s = state.sightings[index];
-    elements.species.value = s.species;
-    elements.notes.value = s.notes;
-    elements.observer.value = s.observer;
-    state.editIndex = index;
-}
-
-function deleteSightings(indices) {
-    if (confirm("Delete selected sightings?")) {
-        indices.sort((a,b)=>b-a).forEach(i => state.sightings.splice(i,1));
-        saveToStorage();
-        render();
+    else {
+        alert("Choose an action.");
     }
 }
 
-// ------------------------ CSV EXPORT ------------------------
-function exportCSV(list=null) {
+// ---------------- EDIT ----------------
+function editSighting(index) {
+    const s = state.sightings[index];
+
+    elements.species.value = s.species;
+    elements.notes.value = s.notes;
+    elements.observer.value = s.observer;
+
+    state.editIndex = index;
+}
+
+// ---------------- DELETE ----------------
+function deleteSightings(indices) {
+    if (!confirm("Delete selected sightings?")) return;
+
+    indices.sort((a, b) => b - a)
+        .forEach(i => state.sightings.splice(i, 1));
+
+    saveToStorage();
+    render();
+}
+
+// ---------------- EXPORT ----------------
+function exportCSV(list = null) {
+
     const arr = list || state.sightings;
-    if (!arr.length) { alert("No sightings to export."); return; }
+    if (!arr.length) {
+        alert("No sightings to export.");
+        return;
+    }
 
     let csv = "Date,Time,Observer,Species/ Object,Notes,Latitude,Longitude\n";
+
     arr.forEach(s => {
         csv += `${s.date},${s.time},${s.observer},${s.species},"${s.notes}",${s.lat},${s.lon}\n`;
     });
 
-    const blob = new Blob([csv],{type:"text/csv"});
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
     a.download = "bushlogger_export.csv";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+
     URL.revokeObjectURL(url);
 }
 
-// ------------------------ SHARE ------------------------
+// ---------------- SHARE ----------------
 function shareSightings(list) {
-    if (!list.length) { alert("No sightings to share."); return; }
 
     let message = "";
+
     list.forEach(s => {
-        message += `Species: ${s.species}\nObserver: ${s.observer}\nDate: ${s.date}\nGPS: ${s.lat},${s.lon}\nNotes: ${s.notes}\n\n`;
+        message += `Species: ${s.species}\nObserver: ${s.observer}\nDate: ${s.date}\nGPS: ${s.lat}, ${s.lon}\nNotes: ${s.notes}\n\n`;
     });
 
     if (navigator.share) {
         navigator.share({
             title: "BushLogger Sightings",
             text: message
-        }).catch(err => {
-            alert("Share failed: " + err);
-        });
+        }).catch(err => alert("Share failed: " + err));
     } else {
-        navigator.clipboard.writeText(message).then(()=>alert("Copied to clipboard. Share anywhere!"));
+        navigator.clipboard.writeText(message)
+            .then(() => alert("Copied to clipboard. Share anywhere!"));
     }
 }
 
-// ------------------------ CSV CHECKLIST ------------------------
+// ---------------- CSV CHECKLIST ----------------
 function handleCSVLoad(event) {
+
     const file = event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
+
     reader.onload = e => {
-        const lines = e.target.result.split(/\r?\n/).filter(l=>l.trim());
-        state.checklist = lines.map(l => l.split(",")[0].trim());
+        const lines = e.target.result
+            .split(/\r?\n/)
+            .filter(l => l.trim());
+
+        state.checklist = lines.map(l =>
+            l.split(",")[0].trim()
+        );
+
         renderChecklist();
     };
+
     reader.readAsText(file);
 }
 
 function renderChecklist() {
+
     elements.checklistContainer.innerHTML = "";
-    state.checklist.forEach(species=>{
-        const id = "chk_" + species.replace(/\s+/g,"_");
+
+    state.checklist.forEach(species => {
+
+        const id = "chk_" + species.replace(/\s+/g, "_");
+
         const wrapper = document.createElement("div");
-        wrapper.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${species}</label>`;
+
+        wrapper.innerHTML = `
+            <input type="checkbox" id="${id}">
+            <label for="${id}">${species}</label>
+        `;
+
         const checkbox = wrapper.querySelector("input");
-        checkbox.addEventListener("change", e=>{
-            if(e.target.checked) handleLog(species);
+
+        checkbox.addEventListener("change", e => {
+            if (e.target.checked)
+                handleLog(species);
         });
+
         elements.checklistContainer.appendChild(wrapper);
     });
 }
 
+// ---------------- START ----------------
 return { init };
 
 })();
