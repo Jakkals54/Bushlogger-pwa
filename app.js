@@ -292,6 +292,60 @@ function exportCSV(list = null) {
     URL.revokeObjectURL(url);
 }
 
+    function exportExcel(list = null) {
+
+    const arr = list || state.sightings;
+
+    if (!arr.length) {
+        alert("No sightings to export.");
+        return;
+    }
+
+    let table = `
+        <table>
+        <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Observer</th>
+            <th>Species/Object</th>
+            <th>Notes</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+        </tr>
+    `;
+
+    arr.forEach(s => {
+        table += `
+            <tr>
+                <td>${s.date}</td>
+                <td>${s.time}</td>
+                <td>${s.observer}</td>
+                <td>${s.species}</td>
+                <td>${s.notes}</td>
+                <td>${s.lat}</td>
+                <td>${s.lon}</td>
+            </tr>
+        `;
+    });
+
+    table += "</table>";
+
+    const blob = new Blob([table], {
+        type: "application/vnd.ms-excel"
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "bushlogger_export.xls";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+}
+
 // ---------------- SHARE ----------------
 function shareSightings(list) {
 
