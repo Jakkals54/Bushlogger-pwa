@@ -1,8 +1,8 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
     margin: 0;
-    padding: 10px;
-    background: #f2f4f7;
+    padding: 15px;
+    background: #f4f6f9;
 }
 
 h1 {
@@ -11,106 +11,107 @@ h1 {
 
 .card {
     background: white;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
 label {
+    font-weight: 600;
     display: block;
-    margin-top: 8px;
-    font-weight: bold;
+    margin-top: 12px;
 }
 
-input, textarea, select, button {
+input[type="text"],
+textarea,
+select {
     width: 100%;
-    padding: 6px;
-    margin-top: 4px;
-    border-radius: 6px;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 8px;
     border: 1px solid #ccc;
 }
 
-textarea {
-    resize: vertical;
-}
-
 button {
-    margin-top: 10px;
-    background: #2c7be5;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 8px;
     border: none;
+    background: linear-gradient(135deg,#2c7be5,#1a5fd1);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
 }
 
-button:disabled {
-    background: gray;
-    cursor: not-allowed;
+button:hover {
+    opacity: 0.9;
 }
+
+/* GPS Slider */
 
 .gps-row {
-    margin-top: 8px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+input[type="checkbox"] {
+    appearance: none;
+    width: 40px;
+    height: 22px;
+    background: #ccc;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+}
+
+input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: 0.3s;
+}
+
+input[type="checkbox"]:checked {
+    background: #2c7be5;
+}
+
+input[type="checkbox"]:checked::before {
+    transform: translateX(18px);
+}
+
+.checklist-box {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
 }
 
 th, td {
-    border: 1px solid #ddd;
-    padding: 6px;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
 }
 
-th {
-    background: #f0f0f0;
-}
-
-.checklist-box {
-    max-height: 250px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin-top: 10px;
-    border-radius: 6px;
-    background: #fafafa;
-}
-
-.checklist-box div {
-    margin-bottom: 6px;
-}
-
-/* Sticky Action Bar */
 .action-bar {
     position: sticky;
     bottom: 0;
     background: white;
-    padding: 10px;
-    border-top: 2px solid #ddd;
+    padding: 15px;
+    border-top: 1px solid #ddd;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-}
-
-.action-right {
-    display: flex;
-    gap: 6px;
-}
-
-@media (max-width: 768px) {
-    .action-bar {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .action-right {
-        width: 100%;
-        flex-direction: column;
-    }
 }
