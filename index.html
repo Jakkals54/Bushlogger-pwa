@@ -1,81 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>BushLogger v2</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BushLogger - PWA v1.2b</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
 </head>
 <body>
 
-<h1>BushLogger</h1>
+<h1>🐦 BushLogger – Structured Summary v1.2b</h1>
 
-<!-- ================= LOG ENTRY CARD ================= -->
+<!-- -------- Log a Sighting -------- -->
+<section>
+  <h2>Log a Sighting</h2>
 
-<div class="card">
-    <h2>Log Sighting</h2>
+  <label for="observer">Observer</label>
+  <input id="observer" type="text" list="observerList" placeholder="Type or select observer">
+  <datalist id="observerList"></datalist>
 
-    <label>Species</label>
-    <input type="text" id="speciesInput" placeholder="Enter species name">
+  <label for="species">Species</label>
+  <input type="text" id="species" placeholder="Species Name">
 
-    <label>Observer</label>
-    <select id="observerSelect">
-        <option value="Frans">Frans</option>
-        <option value="Guest">Guest</option>
-    </select>
+  <label for="notes">Notes</label>
+  <textarea id="notes" placeholder="Notes"></textarea>
 
-    <label>Notes</label>
-    <textarea id="notesInput" rows="2"></textarea>
+  <button id="logButton">💾 Log Sighting</button>
+</section>
 
-    <div class="gps-row">
-        <span>Use GPS</span>
-        <input type="checkbox" id="gpsToggle">
-        <span id="gpsStatus">OFF</span>
-    </div>
+<!-- -------- Summary Table & Actions -------- -->
+<section>
+  <h2>Local Sightings Summary</h2>
 
-    <button id="logButton">Log Sighting</button>
-</div>
+  <table id="summaryTable" border="1">
+    <thead>
+      <tr>
+        <th>Select</th>
+        <th>Listing No</th>
+        <th>Date</th>
+        <th>Species</th>
+        <th>Observer</th>
+        <th>GPS</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody id="summaryBody"></tbody>
+  </table>
 
-<!-- ================= CHECKLIST CARD ================= -->
-
-<div class="card">
-    <h2>Checklist</h2>
-
-    <input type="file" id="csvInput" accept=".csv">
-
-    <div id="checklistContainer" class="checklist-box"></div>
-</div>
-
-<!-- ================= SIGHTINGS SUMMARY ================= -->
-
-<div class="card">
-    <h2>Sightings Summary</h2>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Species</th>
-                <th>Observer</th>
-                <th>GPS</th>
-                <th>Time</th>
-            </tr>
-        </thead>
-        <tbody id="sightingsTableBody"></tbody>
-    </table>
-</div>
-
-<!-- ================= STICKY ACTION BAR ================= -->
-
-<div class="action-bar">
-    <div>
-        <strong id="summaryCount">0 Sightings</strong>
-    </div>
-
-    <div class="action-right">
-        <button id="exportCSV">Export CSV</button>
-        <button id="clearAll">Clear All</button>
-    </div>
-</div>
+  <label for="actionSelector">Action:</label>
+  <select id="actionSelector">
+    <option value="">Select Action</option>
+    <option value="edit">Edit</option>
+    <option value="delete">Delete</option>
+    <option value="export">Export</option>
+  </select>
+  <button id="actionButton">Apply</button>
+</section>
 
 <script src="app.js"></script>
 </body>
