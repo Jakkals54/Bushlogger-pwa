@@ -150,7 +150,7 @@ function renderSightings() {
         row.innerHTML = `
             <td>${s.species}</td>
             <td>${s.observer}</td>
-            <td>${s.gps ? "Yes" : "No"}</td>
+            <td>${s.gps?`${s.gps.lat.toFixed(5)}, ${s.gps.lng.toFixed(5)}`:"No"}</td>
             <td>${s.time}</td>
         `;
 
