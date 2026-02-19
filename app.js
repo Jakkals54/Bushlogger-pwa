@@ -175,6 +175,14 @@ function handleAction() {
     }
 }
 
+function updateSelectionState() {
+    const selected = document.querySelectorAll('.selectSighting:checked').length;
+    document.getElementById("selectedCount").textContent = `(${selected} selected)`;
+
+    const actionBtn = document.getElementById("actionButton");
+    actionBtn.disabled = selected === 0;
+}    
+
 function editSighting(index) {
     const s = state.sightings[index];
     elements.species.value = s.species;
