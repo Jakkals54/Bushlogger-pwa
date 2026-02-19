@@ -51,6 +51,7 @@ function bindEvents() {
     elements.selectAll.addEventListener("change", toggleSelectAll);
     elements.gpsToggle.addEventListener("change", updateGPSStatus);
     elements.csvInput.addEventListener("change", handleCSVLoad);
+    document.addEventListener("change", updateSelectionState);
 }
 
 function updateGPSStatus() {
