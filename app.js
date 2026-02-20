@@ -1,325 +1,365 @@
+// ------------------------ BushLogger App v1.5 ------------------------
 const BushloggerApp = (() => {
 
-const state = { sightings: [], editIndex: null, observers: ["Guest"], checklist: [] };
-const elements = {};
+    // ------------------------ State ------------------------
+    const state = {
+        sightings: [],
+        editIndex: null,
+        observers: ["Guest"],
+        checklist: []
+    };
 
-function init() {
-    cacheElements();
-    loadFromStorage();
-    populateObservers();
-    bindEvents();
-    render();
-    updateGPSStatus();
-}
+    const elements = {};
 
-function cacheElements() {
-    elements.observer = document.getElementById("observer");
-    elements.datalist = document.getElementById("observerList");
-    elements.species = document.getElementById("species");
-    elements.notes = document.getElementById("notes");
-    elements.logButton = document.getElementById("logButton");
-    elements.summaryBody = document.getElementById("summaryBody");
-    elements.actionSelector = document.getElementById("actionSelector");
-    elements.actionButton = document.getElementById("actionButton");
-    elements.selectAll = document.getElementById("selectAll");
-    elements.gpsToggle = document.getElementById("gpsToggle");
-    elements.gpsStatus = document.getElementById("gpsStatus");
-    elements.csvInput = document.getElementById("csvInput");
-    elements.checklistContainer = document.getElementById("checklistContainer");
-}
-
-function loadFromStorage() {
-    state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
-}
-
-function saveToStorage() {
-    localStorage.setItem("bushlogger_sightings", JSON.stringify(state.sightings));
-}
-
-function populateObservers() {
-    elements.datalist.innerHTML = "";
-    state.observers.forEach(name => {
-        const option = document.createElement("option");
-        option.value = name;
-        elements.datalist.appendChild(option);
-    });
-}
-
-function bindEvents() {
-    elements.logButton.addEventListener("click", handleLog);
-    elements.actionButton.addEventListener("click", handleAction);
-    elements.selectAll.addEventListener("change", toggleSelectAll);
-    elements.gpsToggle.addEventListener("change", updateGPSStatus);
-    elements.csvInput.addEventListener("change", handleCSVLoad);
-    document.addEventListener("change", updateSelectionState);
-}
-
-function updateGPSStatus() {
-    elements.gpsStatus.textContent = elements.gpsToggle.checked ? "GPS ON" : "GPS OFF";
-}
-
-// ---------------- GPS ----------------
-function getGPS() {
-    return new Promise(resolve => {
-
-        if (!elements.gpsToggle.checked) {
-            resolve({ lat: "", lon: "" });
-            return;
-        }
-
-        if (!navigator.geolocation) {
-            alert("Geolocation not supported.");
-            resolve({ lat: "", lon: "" });
-            return;
-        }
-
-        elements.gpsStatus.textContent = "Fetching GPS...";
-
-        navigator.geolocation.getCurrentPosition(
-            pos => {
-                elements.gpsStatus.textContent = "GPS ON";
-                resolve({
-                    lat: pos.coords.latitude.toFixed(6),
-                    lon: pos.coords.longitude.toFixed(6)
-                });
-            },
-            () => {
-                alert("GPS permission denied or unavailable.");
-                elements.gpsStatus.textContent = "GPS ERROR";
-                resolve({ lat: "", lon: "" });
-            },
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
-    });
-}
-
-// ---------------- LOGGING ----------------
-async function handleLog(speciesOverride=null) {
-    const speciesRaw = speciesOverride ?? elements.species.value;
-    const species = String(speciesRaw).trim();
-    if (!species) { alert("Enter species/object."); return; }
-
-    const observer = elements.observer.value.trim() || "Guest";
-    if (!state.observers.includes(observer)) {
-        state.observers.push(observer);
+    // ------------------------ Init ------------------------
+    function init() {
+        cacheElements();
+        loadFromStorage();
         populateObservers();
+        bindEvents();
+        render();
+        updateGPSStatus();
     }
 
-    const notes = elements.notes.value.trim();
-    const now = new Date();
-    const date = now.toISOString().split("T")[0];
-    const time = now.toTimeString().split(" ")[0];
-
-    const duplicateIndex = state.sightings.findIndex(s => 
-    String(s.species).toLowerCase() === species.toLowerCase() && s.date === date
-    );
-
-    if (duplicateIndex !== -1 && state.editIndex === null) {
-        if (!confirm(`"${species}" already logged today. Replace?`)) return;
-        state.sightings.splice(duplicateIndex,1);
+    // ------------------------ Cache DOM Elements ------------------------
+    function cacheElements() {
+        elements.observer = document.getElementById("observer");
+        elements.datalist = document.getElementById("observerList");
+        elements.species = document.getElementById("species");
+        elements.notes = document.getElementById("notes");
+        elements.logButton = document.getElementById("logButton");
+        elements.summaryBody = document.getElementById("summaryBody");
+        elements.actionSelector = document.getElementById("actionSelector");
+        elements.actionButton = document.getElementById("actionButton");
+        elements.selectAll = document.getElementById("selectAll");
+        elements.gpsToggle = document.getElementById("gpsToggle");
+        elements.gpsStatus = document.getElementById("gpsStatus");
+        elements.csvInput = document.getElementById("csvInput");
+        elements.checklistContainer = document.getElementById("checklistContainer");
     }
 
-    const gps = await getGPS();
-
-    const entry = { date, time, observer, species, notes, lat: gps.lat, lon: gps.lon };
-
-    if (state.editIndex !== null) {
-        state.sightings[state.editIndex] = entry;
-        state.editIndex = null;
-    } else {
-        state.sightings.push(entry);
+    // ------------------------ Local Storage ------------------------
+    function loadFromStorage() {
+        state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
     }
 
-    saveToStorage();
-    render();
-    if (!speciesOverride) clearForm();
-}
-
-function clearForm() {
-    elements.species.value = "";
-    elements.notes.value = "";
-    elements.observer.value = "";
-}
-
-// ---------------- RENDER ----------------
-function render() {
-    elements.summaryBody.innerHTML = "";
-
-    state.sightings.forEach((s,index)=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td><input type="checkbox" class="selectSighting" data-index="${index}"></td>
-            <td>${index+1}</td>
-            <td>${s.date}</td>
-            <td>${s.species}</td>
-            <td>${s.observer}</td>
-            <td>${s.lat && s.lon ? `${s.lat}, ${s.lon}` : "No GPS"}</td>
-            <td>${s.notes}</td>
-        `;
-        elements.summaryBody.appendChild(tr);
-    });
-
-    elements.selectAll.checked = false;
-}
-
-function toggleSelectAll() {
-    document.querySelectorAll('.selectSighting')
-        .forEach(cb => cb.checked = elements.selectAll.checked);
-}
-
-function updateSelectionState() {
-    const selected = document.querySelectorAll('.selectSighting:checked').length;
-    document.getElementById("selectedCount").textContent = `(${selected} selected)`;
-    elements.actionButton.disabled = selected === 0;
-}
-
-// ---------------- ACTIONS ----------------
-function handleAction() {
-    const action = elements.actionSelector.value;
-    const selectedCheckboxes = document.querySelectorAll('.selectSighting:checked');
-    const indices = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.index));
-
-    if (!indices.length && !action.includes("All")) {
-        alert("Select at least one sighting.");
-        return;
+    function saveToStorage() {
+        localStorage.setItem("bushlogger_sightings", JSON.stringify(state.sightings));
     }
 
-    if (action === "edit") {
-        if (indices.length > 1) { alert("Edit one at a time."); return; }
-        editSighting(indices[0]);
+    // ------------------------ Observers ------------------------
+    function populateObservers() {
+        elements.datalist.innerHTML = "";
+        state.observers.forEach(name => {
+            const option = document.createElement("option");
+            option.value = name;
+            elements.datalist.appendChild(option);
+        });
     }
-    else if (action === "delete") deleteSightings(indices);
-    else if (action === "export") exportCSV(indices.map(i=>state.sightings[i]));
-    else if (action === "share") shareSightings(indices.map(i=>state.sightings[i]));
-    else if (action === "exportAllCSV") exportCSV(state.sightings);
-    else if (action === "exportAllExcel") exportExcel(state.sightings);
-}
 
-function editSighting(index) {
-    const s = state.sightings[index];
-    elements.species.value = s.species;
-    elements.notes.value = s.notes;
-    elements.observer.value = s.observer;
-    state.editIndex = index;
-}
+    // ------------------------ Event Binding ------------------------
+    function bindEvents() {
+        // ✅ Log button
+        elements.logButton.addEventListener("click", () => handleLog());
 
-function deleteSightings(indices) {
-    if (confirm("Delete selected sightings?")) {
-        indices.sort((a,b)=>b-a).forEach(i => state.sightings.splice(i,1));
+        // ✅ Bulk action
+        elements.actionButton.addEventListener("click", handleAction);
+
+        // ✅ Select all
+        elements.selectAll.addEventListener("change", toggleSelectAll);
+
+        // ✅ GPS toggle
+        elements.gpsToggle.addEventListener("change", updateGPSStatus);
+
+        // ✅ CSV checklist load
+        elements.csvInput.addEventListener("change", handleCSVLoad);
+
+        // ✅ Update selection count
+        document.addEventListener("change", updateSelectionState);
+    }
+
+    // ------------------------ GPS Status ------------------------
+    function updateGPSStatus() {
+        elements.gpsStatus.textContent = elements.gpsToggle.checked ? "GPS ON" : "GPS OFF";
+    }
+
+    // ------------------------ GET GPS ------------------------
+    function getGPS() {
+        return new Promise(resolve => {
+            if (!elements.gpsToggle.checked) {
+                resolve({ lat:"-25.000000", lon:"31.000000" });
+                return;
+            }
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => resolve({
+                        lat: pos.coords.latitude.toFixed(6),
+                        lon: pos.coords.longitude.toFixed(6)
+                    }),
+                    () => resolve({ lat:"-25.000000", lon:"31.000000" }),
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                resolve({ lat:"-25.000000", lon:"31.000000" });
+            }
+        });
+    }
+
+    // ------------------------ LOGGING ------------------------
+    async function handleLog(speciesOverride = null) {
+        // ✅ Safely convert species to string
+        const speciesRaw = speciesOverride ?? elements.species.value;
+        const species = String(speciesRaw).trim();
+        if (!species) { alert("Enter species/object."); return; }
+
+        // ✅ Observer
+        const observerRaw = elements.observer.value.trim() || "Guest";
+        const observer = String(observerRaw);
+        if (!state.observers.includes(observer)) {
+            state.observers.push(observer);
+            populateObservers();
+        }
+
+        // ✅ Notes
+        const notes = String(elements.notes.value.trim());
+
+        // ✅ Date & time
+        const now = new Date();
+        const date = now.toISOString().split("T")[0];
+        const time = now.toTimeString().split(" ")[0];
+
+        // ✅ Duplicate check
+        const duplicateIndex = state.sightings.findIndex(s => 
+            String(s.species).toLowerCase() === species.toLowerCase() && s.date === date
+        );
+        if (duplicateIndex !== -1 && state.editIndex === null) {
+            const confirmReplace = confirm(`Species "${species}" already logged today at listing ${duplicateIndex+1}.\nReplace previous entry?`);
+            if (!confirmReplace) return;
+            state.sightings.splice(duplicateIndex,1);
+        }
+
+        // ✅ Get GPS (async)
+        const gps = await getGPS();
+
+        const entry = { date, time, observer, species, notes, lat: gps.lat, lon: gps.lon };
+
+        if (state.editIndex !== null) {
+            state.sightings[state.editIndex] = entry;
+            state.editIndex = null;
+        } else {
+            state.sightings.push(entry);
+        }
+
         saveToStorage();
         render();
+
+        // ✅ Clear form only for manual entry
+        if (!speciesOverride) clearForm();
     }
-}
 
-// ---------------- CSV EXPORT (iPhone Safe) ----------------
-function exportCSV(arr) {
-    if (!arr.length) { alert("No sightings to export."); return; }
+    function clearForm() {
+        elements.species.value = "";
+        elements.notes.value = "";
+        elements.observer.value = "";
+    }
 
-    let csv = "Date,Time,Observer,Species/Object,Notes,Latitude,Longitude\n";
-    arr.forEach(s => {
-        csv += `${s.date},${s.time},${s.observer},${s.species},"${s.notes}",${s.lat},${s.lon}\n`;
-    });
+    // ------------------------ RENDER SUMMARY ------------------------
+    function render() {
+        if (!elements.summaryBody) return;
+        elements.summaryBody.innerHTML = "";
 
-    if (navigator.share && navigator.canShare) {
-        const blob = new Blob([csv], { type: "text/csv" });
-        const file = new File([blob], "bushlogger_export.csv", { type: "text/csv" });
+        state.sightings.forEach((s,index)=>{
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><input type="checkbox" class="selectSighting" data-index="${index}"></td>
+                <td>${index+1}</td>
+                <td>${s.date}</td>
+                <td>${s.species}</td>
+                <td>${s.observer}</td>
+                <td>${s.lat !== "-25.000000" ? s.lat + ", " + s.lon : "Yes"}</td>
+                <td>${s.notes}</td>
+            `;
+            elements.summaryBody.appendChild(tr);
+        });
 
-        if (navigator.canShare({ files: [file] })) {
-            navigator.share({ files: [file], title: "BushLogger Export" });
-            return;
+        elements.selectAll.checked = false;
+        updateSelectionState();
+    }
+
+    // ------------------------ SELECT ALL ------------------------
+    function toggleSelectAll() {
+        const checkboxes = document.querySelectorAll('.selectSighting');
+        checkboxes.forEach(cb => cb.checked = elements.selectAll.checked);
+        updateSelectionState();
+    }
+
+    // ------------------------ BULK ACTIONS ------------------------
+    function handleAction() {
+        const action = elements.actionSelector.value;
+        const selectedCheckboxes = document.querySelectorAll('.selectSighting:checked');
+        if (!selectedCheckboxes.length) { alert("Select at least one sighting."); return; }
+        const indices = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.index));
+
+        if (action === "edit") {
+            if (indices.length > 1) { alert("Edit only one sighting at a time."); return; }
+            editSighting(indices[0]);
+        } else if (action === "delete") {
+            deleteSightings(indices);
+        } else if (action === "export") {
+            const list = indices.map(i => state.sightings[i]);
+            exportCSV(list);
+        } else if (action === "share") {
+            const list = indices.map(i => state.sightings[i]);
+            shareSightings(list);
+        } else if (action === "exportAllCSV") {
+            exportCSV(state.sightings);
+        } else if (action === "exportAllExcel") {
+            exportExcel(state.sightings);
         }
     }
 
-    const blob = new Blob([csv],{type:"text/csv"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "bushlogger_export.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
+    function updateSelectionState() {
+        const selected = document.querySelectorAll('.selectSighting:checked').length;
+        document.getElementById("selectedCount").textContent = `(${selected} selected)`;
 
-// ---------------- EXCEL EXPORT ----------------
-function exportExcel(arr) {
-    if (!arr.length) { alert("No sightings to export."); return; }
+        const actionBtn = document.getElementById("actionButton");
+        actionBtn.disabled = selected === 0;
+    }
 
-    let table = `<table><tr>
-    <th>Date</th><th>Time</th><th>Observer</th>
-    <th>Species/Object</th><th>Notes</th>
-    <th>Latitude</th><th>Longitude</th></tr>`;
+    function editSighting(index) {
+        const s = state.sightings[index];
+        elements.species.value = s.species;
+        elements.notes.value = s.notes;
+        elements.observer.value = s.observer;
+        state.editIndex = index;
+    }
 
-    arr.forEach(s=>{
-        table+=`<tr>
-        <td>${s.date}</td>
-        <td>${s.time}</td>
-        <td>${s.observer}</td>
-        <td>${s.species}</td>
-        <td>${s.notes}</td>
-        <td>${s.lat}</td>
-        <td>${s.lon}</td>
-        </tr>`;
-    });
+    function deleteSightings(indices) {
+        if (confirm("Delete selected sightings?")) {
+            indices.sort((a,b)=>b-a).forEach(i => state.sightings.splice(i,1));
+            saveToStorage();
+            render();
+        }
+    }
 
-    table+="</table>";
+    // ------------------------ CSV EXPORT ------------------------
+    function exportCSV(list=null) {
+        const arr = list || state.sightings;
+        if (!arr.length) { alert("No sightings to export."); return; }
 
-    const blob = new Blob([table], { type:"application/vnd.ms-excel" });
-    const url = URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download="bushlogger_export.xls";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
-// ---------------- CSV CHECKLIST ----------------
-function handleCSVLoad(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = e => {
-
-        let text = e.target.result;
-        text = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
-
-        const rows = text.split("\n")
-            .map(r=>r.trim())
-            .filter(r=>r.length>0);
-
-        state.checklist = rows.map(r =>
-            r.split(",")[0].replace(/"/g,"").trim()
-        );
-
-        renderChecklist();
-    };
-    reader.readAsText(file);
-}
-
-function renderChecklist() {
-    elements.checklistContainer.innerHTML = "";
-
-    state.checklist.forEach(species=>{
-        const id = "chk_" + species.replace(/\s+/g,"_");
-
-        const wrapper=document.createElement("div");
-        wrapper.innerHTML=`
-        <input type="checkbox" id="${id}">
-        <label for="${id}">${species}</label>`;
-
-        wrapper.querySelector("input").addEventListener("change", e=>{
-            if(e.target.checked) handleLog(species);
+        let csv = "Date,Time,Observer,Species/ Object,Notes,Latitude,Longitude\n";
+        arr.forEach(s => {
+            csv += `${s.date},${s.time},${s.observer},${s.species},"${s.notes}",${s.lat},${s.lon}\n`;
         });
 
-        elements.checklistContainer.appendChild(wrapper);
-    });
-}
+        const blob = new Blob([csv],{type:"text/csv"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "bushlogger_export.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
 
-return { init };
+    // ------------------------ EXCEL EXPORT ------------------------
+    function exportExcel(list = null) {
+        const arr = list || state.sightings;
+        if (!arr.length) { alert("No sightings to export."); return; }
+
+        let table = `
+            <table>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Observer</th>
+                <th>Species/Object</th>
+                <th>Notes</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+            </tr>
+        `;
+        arr.forEach(s => {
+            table += `
+                <tr>
+                    <td>${s.date}</td>
+                    <td>${s.time}</td>
+                    <td>${s.observer}</td>
+                    <td>${s.species}</td>
+                    <td>${s.notes}</td>
+                    <td>${s.lat}</td>
+                    <td>${s.lon}</td>
+                </tr>
+            `;
+        });
+        table += "</table>";
+
+        const blob = new Blob([table], { type: "application/vnd.ms-excel" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "bushlogger_export.xls";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // ------------------------ SHARE ------------------------
+    function shareSightings(list) {
+        if (!list.length) { alert("No sightings to share."); return; }
+
+        let message = "";
+        list.forEach(s => {
+            message += `Species: ${s.species}\nObserver: ${s.observer}\nDate: ${s.date}\nGPS: ${s.lat},${s.lon}\nNotes: ${s.notes}\n\n`;
+        });
+
+        if (navigator.share) {
+            navigator.share({
+                title: "BushLogger Sightings",
+                text: message
+            }).catch(err => alert("Share failed: " + err));
+        } else {
+            navigator.clipboard.writeText(message).then(()=>alert("Copied to clipboard. Share anywhere!"));
+        }
+    }
+
+    // ------------------------ CSV CHECKLIST ------------------------
+    function handleCSVLoad(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            const lines = e.target.result.split(/\r?\n/).filter(l=>l.trim());
+            state.checklist = lines.map(l => l.split(",")[0].trim());
+            renderChecklist();
+        };
+        reader.readAsText(file);
+    }
+
+    function renderChecklist() {
+        elements.checklistContainer.innerHTML = "";
+        state.checklist.forEach(species=>{
+            const id = "chk_" + species.replace(/\s+/g,"_");
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${species}</label>`;
+            const checkbox = wrapper.querySelector("input");
+            checkbox.addEventListener("change", e=>{
+                if(e.target.checked) {
+                    handleLog(species);    // ✅ immediate logging
+                    e.target.checked = false; // ✅ auto-untick
+                }
+            });
+            elements.checklistContainer.appendChild(wrapper);
+        });
+    }
+
+    return { init };
 
 })();
 
+// ------------------------ DOMContentLoaded ------------------------
 document.addEventListener("DOMContentLoaded", BushloggerApp.init);
