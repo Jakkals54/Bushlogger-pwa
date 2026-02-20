@@ -1,4 +1,4 @@
-// ------------------------ BushLogger App v1.5 with Dynamic CSV Column ------------------------
+// ------------------------ BushLogger App v1.5 Complete ------------------------
 const BushloggerApp = (() => {
 
     // ------------------------ State ------------------------
@@ -38,7 +38,7 @@ const BushloggerApp = (() => {
         elements.gpsStatus = document.getElementById("gpsStatus");
         elements.csvInput = document.getElementById("csvInput");
         elements.checklistContainer = document.getElementById("checklistContainer");
-        elements.csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
+        elements.csvSpeciesColumn = document.getElementById("csvSpeciesColumn"); // make sure this exists
     }
 
     // ------------------------ Local Storage ------------------------
@@ -67,7 +67,9 @@ const BushloggerApp = (() => {
         elements.selectAll.addEventListener("change", toggleSelectAll);
         elements.gpsToggle.addEventListener("change", updateGPSStatus);
         elements.csvInput.addEventListener("change", handleCSVLoad);
-        elements.csvSpeciesColumn.addEventListener("change", () => renderChecklist());
+        if(elements.csvSpeciesColumn) {
+            elements.csvSpeciesColumn.addEventListener("change", () => renderChecklist());
+        }
         document.addEventListener("change", updateSelectionState);
     }
 
@@ -109,7 +111,6 @@ const BushloggerApp = (() => {
         }
 
         const notes = String(notesOverride ?? elements.notes.value.trim());
-
         const now = new Date();
         const date = now.toISOString().split("T")[0];
         const time = now.toTimeString().split(" ")[0];
@@ -136,7 +137,6 @@ const BushloggerApp = (() => {
 
         saveToStorage();
         render();
-
         if (!speciesOverride) clearForm();
     }
 
@@ -223,7 +223,7 @@ const BushloggerApp = (() => {
     // ------------------------ CSV EXPORT ------------------------
     function exportCSV(list) {
         if (!list.length) { alert("No sightings to export."); return; }
-        let csv = "Date,Time,Observer,Species/ Object,Notes,Latitude,Longitude\n";
+        let csv = "Date,Time,Observer,Species/Object,Notes,Latitude,Longitude\n";
         list.forEach(s => {
             csv += `${s.date},${s.time},${s.observer},${s.species},"${s.notes}",${s.lat},${s.lon}\n`;
         });
@@ -273,42 +273,46 @@ const BushloggerApp = (() => {
 
     // ------------------------ CSV CHECKLIST ------------------------
     function handleCSVLoad(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+        const file = event.target.files[0];
+        if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = e => {
-        const lines = e.target.result.split(/\r?\n/).filter(l=>l.trim());
-        if (!lines.length) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const lines = e.target.result.split(/\r?\n/).filter(l=>l.trim());
+            if (!lines.length) return;
 
-        // Detect separator: tab or comma
-        const separator = lines[0].includes("\t") ? "\t" : ",";
-        
-        // Headers
-        state.csvHeaders = lines[0].split(separator).map(h => h.trim()).filter(h => h);
+            // Detect separator: tab or comma
+            const separator = lines[0].includes("\t") ? "\t" : ",";
 
-        // Data rows
-        state.checklist = lines.slice(1)
-            .map(line => line.split(separator).map(c => c.trim()))
-            .filter(row => row.length > 0);
+            // Headers (trim BOM if exists)
+            state.csvHeaders = lines[0].split(separator).map(h => h.replace(/^\uFEFF/,'').trim()).filter(h => h);
 
-        // Populate dropdown
-        if(elements.csvSpeciesColumn){
-            elements.csvSpeciesColumn.innerHTML = "";
-            state.csvHeaders.forEach((h,i)=>{
-                const opt = document.createElement("option");
-                opt.value = i;
-                opt.textContent = h;
-                elements.csvSpeciesColumn.appendChild(opt);
-            });
-            state.speciesColumnIndex = parseInt(elements.csvSpeciesColumn.value);
-        }
+            // Data rows
+            state.checklist = lines.slice(1)
+                .map(line => line.split(separator).map(c => c.trim()))
+                .filter(row => row.some(cell => cell !== ""));
 
-        // Render checklist
-        renderChecklist();
-    };
-    reader.readAsText(file);
-}
+            // Populate species column dropdown
+            if(elements.csvSpeciesColumn && state.csvHeaders.length > 0){
+                elements.csvSpeciesColumn.innerHTML = "";
+                state.csvHeaders.forEach((h,i)=>{
+                    const opt = document.createElement("option");
+                    opt.value = i;
+                    opt.textContent = h;
+                    elements.csvSpeciesColumn.appendChild(opt);
+                });
+                elements.csvSpeciesColumn.value = 0;
+                state.speciesColumnIndex = parseInt(elements.csvSpeciesColumn.value);
+            }
+
+            // Render checklist
+            renderChecklist();
+
+            // Reset input so same file can be loaded again
+            elements.csvInput.value = "";
+        };
+        reader.readAsText(file);
+    }
 
     function renderChecklist() {
         elements.checklistContainer.innerHTML = "";
