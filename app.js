@@ -111,7 +111,7 @@ async function handleLog(speciesOverride=null) {
     const time = now.toTimeString().split(" ")[0];
 
     const duplicateIndex = state.sightings.findIndex(s => 
-        s.species.toLowerCase() === species.toLowerCase() && s.date === date
+    String(s.species).toLowerCase() === species.toLowerCase() && s.date === date
     );
 
     if (duplicateIndex !== -1 && state.editIndex === null) {
