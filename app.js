@@ -273,16 +273,27 @@ const BushloggerApp = (() => {
 
     // ------------------------ CSV CHECKLIST ------------------------
     function handleCSVLoad(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+    const file = event.target.files[0];
+    if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = e => {
-            const lines = e.target.result.split(/\r?\n/).filter(l=>l.trim());
-            state.csvHeaders = lines[0].split(",").map(h=>h.trim());
-            state.checklist = lines.slice(1).map(line => line.split(",").map(c=>c.trim()));
+    const reader = new FileReader();
+    reader.onload = e => {
+        const lines = e.target.result.split(/\r?\n/).filter(l=>l.trim());
+        if (!lines.length) return;
 
-            // Populate dropdown for column selection
+        // Detect separator: tab or comma
+        const separator = lines[0].includes("\t") ? "\t" : ",";
+        
+        // Headers
+        state.csvHeaders = lines[0].split(separator).map(h => h.trim()).filter(h => h);
+
+        // Data rows
+        state.checklist = lines.slice(1)
+            .map(line => line.split(separator).map(c => c.trim()))
+            .filter(row => row.length > 0);
+
+        // Populate dropdown
+        if(elements.csvSpeciesColumn){
             elements.csvSpeciesColumn.innerHTML = "";
             state.csvHeaders.forEach((h,i)=>{
                 const opt = document.createElement("option");
@@ -291,10 +302,13 @@ const BushloggerApp = (() => {
                 elements.csvSpeciesColumn.appendChild(opt);
             });
             state.speciesColumnIndex = parseInt(elements.csvSpeciesColumn.value);
-            renderChecklist();
-        };
-        reader.readAsText(file);
-    }
+        }
+
+        // Render checklist
+        renderChecklist();
+    };
+    reader.readAsText(file);
+}
 
     function renderChecklist() {
         elements.checklistContainer.innerHTML = "";
