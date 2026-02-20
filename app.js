@@ -95,7 +95,8 @@ function getGPS() {
 
 // ---------------- LOGGING ----------------
 async function handleLog(speciesOverride=null) {
-    const species = (speciesOverride || elements.species.value.trim());
+    const speciesRaw = speciesOverride ?? elements.species.value;
+    const species = String(speciesRaw).trim();
     if (!species) { alert("Enter species/object."); return; }
 
     const observer = elements.observer.value.trim() || "Guest";
