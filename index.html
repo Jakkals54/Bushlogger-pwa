@@ -16,7 +16,7 @@
 <section>
   <h2>Optional Checklist CSV</h2>
   <input type="file" id="csvInput" accept=".csv">
-  <p>Laai 'n lys. Merk voeg hom by daaglikse lys.</p>
+  <p>Laai eie lys. Merk om by daaglikse waarnemings-lys te sit.</p>
 
   <label for="csvSpeciesColumn">Selekteer Kollom(me):</label>
   <select id="csvSpeciesColumn" multiple size="3"></select>
@@ -28,14 +28,14 @@
 <section>
 <h2>Log Waarnemings</h2>
 
-<label for="observer">Observer</label>
+<label for="observer">Waarnemer</label>
 <input id="observer" type="text" list="observerList" placeholder="Type or select observer">
 <datalist id="observerList"></datalist>
 
-<label for="species">Species / Object</label>
+<label for="species">Spesie / Voorwerp</label>
 <input type="text" id="species" placeholder="Species Name">
 
-<label for="notes">Notes</label>
+<label for="notes">Notas</label>
 <textarea id="notes" placeholder="Notes"></textarea>
 
 <!-- GPS Toggle -->
@@ -43,15 +43,15 @@
   <input type="checkbox" id="gpsToggle" checked>
   <span class="slider"></span>
 </label>
-<span id="gpsStatus">GPS ON</span>
+<span id="gpsStatus">GPS AAN</span>
 
 <br><br>
-<button id="logButton">💾 Log Sighting</button>
+<button id="logButton">💾 Log Waarneming</button>
 </section>
 
 <!-- -------- Summary Table & Actions -------- -->
 <section>
-<h2>Daily Sightings Summary</h2>
+<h2>Daaglikse Waarnemings Opsommings</h2>
 
 <table id="summaryTable" border="1">
   <thead>
@@ -70,22 +70,22 @@
 
 <div class="action-bar">
   <div class="action-left">
-    <strong>Bulk Actions</strong>
+    <strong>Veelvuldige Aksies</strong>
     <span id="selectedCount">(0 selected)</span>
   </div>
 
   <div class="action-right">
     <select id="actionSelector">
-      <option value="">Choose action...</option>
-      <option value="edit">✏ Edit</option>
-      <option value="delete">🗑 Delete</option>
-      <option value="export">📤 Export</option>
-      <option value="share">📱 Share</option>
-      <option value="exportAllCSV">📄 Save ALL as CSV</option>
-      <option value="exportAllExcel">📊 Save ALL as Excel</option>
+      <option value="">Kies aksie...</option>
+      <option value="edit">✏ Wysig</option>
+      <option value="delete">🗑 Verwyder</option>
+      <option value="export">📤 Voer-ui</option>
+      <option value="share">📱 Deel</option>
+      <option value="exportAllCSV">📄 Spaar almal as CSV</option>
+      <option value="exportAllExcel">📊 Spaar almal as Excel</option>
     </select>
 
-    <button id="actionButton" disabled>Apply</button>
+    <button id="actionButton" disabled>Wend Aan</button>
   </div>
 </div>
 
