@@ -357,7 +357,7 @@ const notes = String(
 
         elements.checklistContainer.appendChild(wrapper);
     });
-}
+
 
 return { init };
 
