@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderPreview(0); // show first column by default
         };
 
-        reader.readAsText(file);
+        reader.readAsText(file, "UTF-8");
     });
 
     dropdown.addEventListener("change", function () {
