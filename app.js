@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const csvInput = document.getElementById("csvInput");
     const dropdown = document.getElementById("csvSpeciesColumn");
+    const container = document.getElementById("checklistContainer");
+
+    let csvRows = [];
 
     csvInput.addEventListener("change", function () {
 
@@ -15,25 +18,24 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.onload = function (e) {
 
             const text = e.target.result;
-            console.log("File loaded");
 
             const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
-            if (lines.length === 0) {
-                console.log("No lines found");
-                return;
-            }
+            if (lines.length === 0) return;
 
+            // Detect delimiter
             let delimiter = ",";
             if (lines[0].includes("\t")) delimiter = "\t";
             if (lines[0].includes(";")) delimiter = ";";
 
-            console.log("Delimiter:", delimiter);
-
             const headers = lines[0].split(delimiter).map(h => h.trim());
-            console.log("Headers:", headers);
 
+            // Store full dataset (excluding header row)
+            csvRows = lines.slice(1).map(line =>
+                line.split(delimiter).map(cell => cell.trim())
+            );
+
+            // Populate dropdown
             dropdown.innerHTML = "";
-
             headers.forEach((header, index) => {
                 const option = document.createElement("option");
                 option.value = index;
@@ -41,10 +43,35 @@ document.addEventListener("DOMContentLoaded", () => {
                 dropdown.appendChild(option);
             });
 
-            console.log("Dropdown options count:", dropdown.options.length);
+            console.log("Headers loaded:", headers.length);
+            console.log("Rows loaded:", csvRows.length);
+
+            renderPreview(0); // show first column by default
         };
 
         reader.readAsText(file);
     });
+
+    dropdown.addEventListener("change", function () {
+        renderPreview(parseInt(this.value));
+    });
+
+    function renderPreview(columnIndex) {
+
+        container.innerHTML = "";
+
+        if (!csvRows.length) return;
+
+        csvRows.forEach(row => {
+
+            const value = row[columnIndex];
+            if (!value) return;
+
+            const div = document.createElement("div");
+            div.textContent = value;
+            container.appendChild(div);
+
+        });
+    }
 
 });
