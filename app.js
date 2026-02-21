@@ -118,9 +118,9 @@ function processCSV(text) {
         elements.csvSpeciesColumn.appendChild(option);
     });
 
-    state.speciesColumnIndex = 0;
-    renderChecklist();
-}
+    //state.speciesColumnIndex = 0;
+    //renderChecklist();
+//}
 
 function renderChecklist() {
     elements.checklistContainer.innerHTML = "";
