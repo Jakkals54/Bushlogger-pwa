@@ -122,24 +122,24 @@ function processCSV(text) {
     //renderChecklist();
 //}
 
-function renderChecklist() {
-    elements.checklistContainer.innerHTML = "";
+//function renderChecklist() {
+  //  elements.checklistContainer.innerHTML = "";
 
-    state.checklistData.forEach(row => {
-        const speciesName = row[state.speciesColumnIndex];
-        if (!speciesName) return;
+   // state.checklistData.forEach(row => {
+     //   const speciesName = row[state.speciesColumnIndex];
+       // if (!speciesName) return;
 
-        const label = document.createElement("label");
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.value = speciesName;
+       // const label = document.createElement("label");
+       // const checkbox = document.createElement("input");
+       // checkbox.type = "checkbox";
+       // checkbox.value = speciesName;
 
-        checkbox.addEventListener("change", function () {
-            if (this.checked) {
-                logSighting(this.value);
-                this.checked = false; // auto-untick
-            }
-        });
+       // checkbox.addEventListener("change", function () {
+         //   if (this.checked) {
+           //     logSighting(this.value);
+             //   this.checked = false; // auto-untick
+           // }
+       // });
 
         label.appendChild(checkbox);
         label.append(" " + speciesName);
