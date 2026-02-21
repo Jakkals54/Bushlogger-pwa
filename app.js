@@ -354,8 +354,8 @@ const notes = String(
         checkbox.addEventListener("change", function () {
             if (this.checked) {
         // Log only the first selected column
-                speciesArray.forEach(species => {
-                   handleLog(speciesArray.join(" / "));
+          const primarySpecies = speciesArray[0];
+            handleLog(primarySpecies);
                 });
             }
         });
