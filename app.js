@@ -353,8 +353,9 @@ const notes = String(
         // 🔥 THIS IS THE IMPORTANT PART
         checkbox.addEventListener("change", function () {
             if (this.checked) {
+        // Log only the first selected column
                 speciesArray.forEach(species => {
-                    handleLog(species);
+                   handleLog(speciesArray[0]);
                 });
             }
         });
