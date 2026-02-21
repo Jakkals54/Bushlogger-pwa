@@ -355,7 +355,7 @@ const notes = String(
             if (this.checked) {
         // Log only the first selected column
                 speciesArray.forEach(species => {
-                   handleLog(speciesArray[0]);
+                   handleLog(speciesArray.join(" / "));
                 });
             }
         });
