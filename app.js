@@ -68,7 +68,7 @@ const BushloggerApp = (() => {
         elements.gpsToggle.addEventListener("change", updateGPSStatus);
         elements.csvInput.addEventListener("change", handleCSVLoad);
         elements.csvSpeciesColumn.addEventListener("change", () => {
-            state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
                                               .map(opt => parseInt(opt.value));
             renderChecklist();
         });
@@ -323,27 +323,43 @@ const notes = String(
     }
 
     function renderChecklist() {
-        elements.checklistContainer.innerHTML = "";
-        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-                                          .map(opt => parseInt(opt.value));
+    elements.checklistContainer.innerHTML = "";
 
-        state.checklist.forEach(row=>{
-            // Combine all selected columns for label
-            const speciesArray = state.speciesColumnIndices.map(i => row[i] || "").filter(v => v);
-            if(speciesArray.length === 0) return;
+    // Get selected column indices
+    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+        .map(opt => parseInt(opt.value));
 
-            const speciesLabel = speciesArray.join(" / ");
-            const id = "chk_" + speciesLabel.replace(/\s+/g,"_");
-            const wrapper = document.createElement("div");
-            wrapper.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${speciesLabel}</label>`;
-            const checkbox = wrapper.querySelector("input");
-            checkbox.addEventListener("change", e=>{
-                if(e.target.checked){
-                    speciesArray.forEach(species => handleLog(species));
-                
-                }
-            });
-            elements.checklistContainer.appendChild(wrapper);
+    state.checklist.forEach(row => {
+
+        // Combine selected columns (English / Afrikaans etc.)
+        const speciesArray = state.speciesColumnIndices
+            .map(i => row[i] || "")
+            .filter(v => v.trim() !== "");
+
+        if (speciesArray.length === 0) return;
+
+        const speciesLabel = speciesArray.join(" / ");
+        const id = "chk_" + speciesLabel.replace(/\s+/g, "_");
+
+        const wrapper = document.createElement("div");
+
+        wrapper.innerHTML = `
+            <input type="checkbox" id="${id}">
+            <label for="${id}">${speciesLabel}</label>
+        `;
+
+        const checkbox = wrapper.querySelector("input");
+
+        // 🔥 THIS IS THE IMPORTANT PART
+        checkbox.addEventListener("change", function () {
+            if (this.checked) {
+                speciesArray.forEach(species => {
+                    handleLog(species);
+                });
+            }
+        });
+
+        elements.checklistContainer.appendChild(wrapper);
         });
     }
 
