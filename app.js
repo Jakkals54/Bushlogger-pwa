@@ -340,7 +340,7 @@ const notes = String(
             checkbox.addEventListener("change", e=>{
                 if(e.target.checked){
                     speciesArray.forEach(species => handleLog(species));
-                    e.target.checked = false; // auto untick
+                
                 }
             });
             elements.checklistContainer.appendChild(wrapper);
