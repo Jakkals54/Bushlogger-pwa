@@ -317,51 +317,56 @@ const notes = String(
                 state.speciesColumnIndices = [0];
             }
 
+   //------------------RENDER CHECKLIST--------------------         
             renderChecklist();
         };
         reader.readAsText(file);
     }
 
     function renderChecklist() {
+
     elements.checklistContainer.innerHTML = "";
 
-    // Get selected column indices
+    // Make sure we have selected columns
     state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
         .map(opt => parseInt(opt.value));
 
+    if (!state.speciesColumnIndices.length) return;
+
     state.checklist.forEach(row => {
 
-        // Combine selected columns (English / Afrikaans etc.)
-        const speciesArray = state.speciesColumnIndices
+        // Build display label (English / Afrikaans etc.)
+        const displayValues = state.speciesColumnIndices
             .map(i => row[i] || "")
             .filter(v => v.trim() !== "");
 
-        if (speciesArray.length === 0) return;
+        if (displayValues.length === 0) return;
 
-        const speciesLabel = speciesArray.join(" / ");
-        const id = "chk_" + speciesLabel.replace(/\s+/g, "_");
+        const displayLabel = displayValues.join(" / ");
+
+        // Choose ONE value to log (first selected column)
+        const logValue = row[state.speciesColumnIndices[0]];
+
+        const id = "chk_" + displayLabel.replace(/\s+/g, "_");
 
         const wrapper = document.createElement("div");
 
         wrapper.innerHTML = `
             <input type="checkbox" id="${id}">
-            <label for="${id}">${speciesLabel}</label>
+            <label for="${id}">${displayLabel}</label>
         `;
 
         const checkbox = wrapper.querySelector("input");
 
-        // 🔥 THIS IS THE IMPORTANT PART
         checkbox.addEventListener("change", function () {
             if (this.checked) {
-        // Log only the first selected column
-          const primarySpecies = speciesArray[0];
-            handleLog(primarySpecies);
-                });
+                handleLog(logValue);
             }
         });
 
         elements.checklistContainer.appendChild(wrapper);
-        });
+    });
+}
     }
 
     return { init };
