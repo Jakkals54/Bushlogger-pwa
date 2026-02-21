@@ -35,38 +35,79 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ===============================
-// CSV LOADING
+// CLEAN CSV LOADER ONLY
 // ===============================
-elements.csvInput.addEventListener("change", handleCSVLoad);
-elements.csvSpeciesColumn.addEventListener("change", () => {
-    state.speciesColumnIndex = parseInt(elements.csvSpeciesColumn.value);
-    renderChecklist();
-});
 
-function handleCSVLoad(e) {
-    const file = e.target.files[0];
+const csvInput = document.getElementById("csvInput");
+const csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
+
+csvInput.addEventListener("change", function () {
+
+    const file = this.files[0];
     if (!file) return;
+
+    console.log("File selected:", file.name);
+
+    // Show filename next to input (optional visual confirmation)
+    csvInput.title = file.name;
 
     const reader = new FileReader();
 
-    reader.onload = function (event) {
-        const text = event.target.result;
-        parseCSV(text);
+    reader.onload = function (e) {
+        const text = e.target.result;
+        console.log("File loaded successfully");
+        processCSV(text);
+    };
+
+    reader.onerror = function () {
+        console.error("Error reading file");
     };
 
     reader.readAsText(file);
-}
+});
 
-function parseCSV(text) {
-    const lines = text.trim().split(/\r?\n/);
-    if (lines.length < 2) return;
+function processCSV(text) {
 
-    const delimiter = lines[0].includes("\t") ? "\t" : ",";
+    if (!text || text.trim() === "") {
+        console.error("CSV file empty");
+        return;
+    }
+
+    const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+
+    if (lines.length === 0) {
+        console.error("No lines found");
+        return;
+    }
+
+    // Detect delimiter
+    let delimiter = ",";
+    if (lines[0].includes("\t")) delimiter = "\t";
+    if (lines[0].includes(";")) delimiter = ";";
+
+    console.log("Detected delimiter:", delimiter);
 
     const headers = lines[0].split(delimiter).map(h => h.trim());
-    state.checklistData = lines.slice(1).map(line =>
-        line.split(delimiter).map(cell => cell.trim())
-    );
+
+    console.log("Headers detected:", headers);
+
+    // Clear dropdown
+    csvSpeciesColumn.innerHTML = "";
+
+    headers.forEach((header, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = header;
+        csvSpeciesColumn.appendChild(option);
+    });
+
+    if (headers.length > 0) {
+        csvSpeciesColumn.selectedIndex = 0;
+        console.log("Dropdown populated successfully");
+    } else {
+        console.error("No headers found");
+    }
+}
 
     // Populate dropdown
     elements.csvSpeciesColumn.innerHTML = "";
