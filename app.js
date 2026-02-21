@@ -145,7 +145,7 @@ function processCSV(text) {
         label.append(" " + speciesName);
         elements.checklistContainer.appendChild(label);
         elements.checklistContainer.appendChild(document.createElement("br"));
-   // });
+    });
 }
 
 // ===============================
