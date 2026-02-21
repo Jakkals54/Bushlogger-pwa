@@ -284,6 +284,7 @@ const notes = String(
 
     // ------------------------ CSV CHECKLIST ------------------------
     function handleCSVLoad(event) {
+		console.log("CSV load triggered");
         const file = event.target.files[0];
         if (!file) return;
 
