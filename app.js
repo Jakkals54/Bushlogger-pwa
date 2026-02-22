@@ -62,13 +62,13 @@ const BushloggerApp = (() => {
 
     // ------------------------ Event Binding ------------------------
     function bindEvents() {
-    elements.logButton.addEventListener("click", () => handleLog());
-    elements.actionButton.addEventListener("click", handleAction);
-    elements.selectAll.addEventListener("change", toggleSelectAll);
-    elements.gpsToggle.addEventListener("change", updateGPSStatus);
-    elements.csvInput.addEventListener("change", handleCSVLoad);
-    document.addEventListener("change", updateSelectionState);
-}
+        elements.logButton.addEventListener("click", () => handleLog());
+        elements.actionButton.addEventListener("click", handleAction);
+        elements.selectAll.addEventListener("change", toggleSelectAll);
+        elements.gpsToggle.addEventListener("change", updateGPSStatus);
+        elements.csvInput.addEventListener("change", handleCSVLoad);
+        document.addEventListener("change", updateSelectionState);
+    }
 
     // ------------------------ GPS ------------------------
     function updateGPSStatus() {
@@ -97,65 +97,64 @@ const BushloggerApp = (() => {
     }
 
     // ------------------------ LOGGING ------------------------
-	//-----------Species Extraction------------------
     async function handleLog(speciesOverride = null, notesOverride = null, observerOverride = null) {
-    let nationalIndex = "";
-	let afrikaans = "";
-	let english = "";
-	let speciesDisplay = "";
+        let nationalIndex = "";
+        let afrikaans = "";
+        let english = "";
+        let speciesDisplay = "";
 
-if (speciesOverride && typeof speciesOverride === "object") {
-    nationalIndex = speciesOverride.nationalIndex;
-    afrikaans = speciesOverride.afrikaans;
-    english = speciesOverride.english;
-    speciesDisplay = `${nationalIndex} - ${afrikaans} / ${english}`;
-} else {
-    speciesDisplay = elements.species.value.trim();
-}
+        if (speciesOverride && typeof speciesOverride === "object") {
+            nationalIndex = speciesOverride.nationalIndex;
+            afrikaans = speciesOverride.afrikaans;
+            english = speciesOverride.english;
+            speciesDisplay = `${nationalIndex} - ${afrikaans} / ${english}`;
+        } else {
+            speciesDisplay = elements.species.value.trim();
+        }
 
-//--------------Observer Input-------------------		
-const observerValue = elements.observer.value.trim();
-const observer = String(
-    observerOverride !== null && observerOverride !== undefined
-        ? observerOverride
-        : (observerValue || "Guest")
-);
+        //--------------Observer Input-------------------        
+        const observerValue = elements.observer.value.trim();
+        const observer = String(
+            observerOverride !== null && observerOverride !== undefined
+                ? observerOverride
+                : (observerValue || "Guest")
+        );
 
-const notes = String(
-    notesOverride !== null && notesOverride !== undefined
-        ? notesOverride
-        : elements.notes.value.trim()
-);
+        const notes = String(
+            notesOverride !== null && notesOverride !== undefined
+                ? notesOverride
+                : elements.notes.value.trim()
+        );
 
         const now = new Date();
         const date = now.toISOString().split("T")[0];
         const time = now.toTimeString().split(" ")[0];
 
-        //---------- Duplicate check-----------
+        //---------- Duplicate check by national index-----------
         const duplicateIndex = state.sightings.findIndex(s =>
-   		s.nationalIndex === nationalIndex && s.date === date
-);
+            s.nationalIndex === nationalIndex && s.date === date
+        );
         if (duplicateIndex !== -1 && state.editIndex === null) {
-            const confirmReplace = confirm(`Species "${species}" already logged today at listing ${duplicateIndex+1}.\nReplace previous entry?`);
+            const confirmReplace = confirm(`Species "${speciesDisplay}" already logged today at listing ${duplicateIndex+1}.\nReplace previous entry?`);
             if (!confirmReplace) return;
             state.sightings.splice(duplicateIndex,1);
         }
 
         const gps = await getGPS();
-		
-	//---------------Entry Object-----------------------
+
+        //---------------Entry Object-----------------------
         const entry = {
-    date,
-    time,
-    observer,
-    nationalIndex,
-    afrikaans,
-    english,
-    species: speciesDisplay,
-    notes,
-    lat: gps.lat,
-    lon: gps.lon
-};
+            date,
+            time,
+            observer,
+            nationalIndex,
+            afrikaans,
+            english,
+            species: speciesDisplay,
+            notes,
+            lat: gps.lat,
+            lon: gps.lon
+        };
 
         if (state.editIndex !== null) {
             state.sightings[state.editIndex] = entry;
@@ -303,16 +302,14 @@ const notes = String(
 
     // ------------------------ CSV CHECKLIST ------------------------
     function handleCSVLoad(event) {
-		console.log("CSV load triggered");
         const file = event.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
         reader.onload = e => {
-            const lines = e.target.result.split(/\r?\n/).filter(l=>l.trim());
+            const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
             if (!lines.length) return;
 
-            // Detect separator: tab or comma
             const separator = lines[0].includes("\t") ? "\t" : ",";
 
             // Headers
@@ -335,62 +332,58 @@ const notes = String(
                 // default first column selected
                 elements.csvSpeciesColumn.selectedIndex = 0;
                 state.speciesColumnIndices = [0];
+
+                elements.csvSpeciesColumn.addEventListener("change", () => {
+                    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+                        .map(opt => parseInt(opt.value));
+                    renderChecklist();
+                });
             }
 
-   //------------------RENDER CHECKLIST--------------------         
             renderChecklist();
         };
+
         reader.readAsText(file, "UTF-8");
     }
 
     function renderChecklist() {
+        elements.checklistContainer.innerHTML = "";
 
-    elements.checklistContainer.innerHTML = "";
+        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+            .map(opt => parseInt(opt.value));
 
-    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-        .map(opt => parseInt(opt.value));
+        if (!state.speciesColumnIndices.length) return;
 
-    if (!state.speciesColumnIndices.length) return;
+        state.checklist.forEach(row => {
+            const nationalIndex = row[0] || "";
+            const afrikaans = row[1] || "";
+            const english = row[2] || "";
 
-    state.checklist.forEach(row => {
+            if (!nationalIndex) return;
 
-        const nationalIndex = row[0] || "";
-        const afrikaans = row[1] || "";
-        const english = row[2] || "";
+            const displayLabel = `${afrikaans} / ${english}`;
+            const id = "chk_" + nationalIndex;
 
-        if (!nationalIndex) return;
+            const wrapper = document.createElement("div");
 
-        const displayLabel = `${afrikaans} / ${english}`;
+            wrapper.innerHTML = `
+                <input type="checkbox" id="${id}">
+                <label for="${id}">${nationalIndex} - ${displayLabel}</label>
+            `;
 
-        const id = "chk_" + nationalIndex;
+            const checkbox = wrapper.querySelector("input");
+            checkbox.addEventListener("change", function () {
+                if (this.checked) {
+                    handleLog({ nationalIndex, afrikaans, english });
+                }
+            });
 
-        const wrapper = document.createElement("div");
-
-        wrapper.innerHTML = `
-            <input type="checkbox" id="${id}">
-            <label for="${id}">${nationalIndex} - ${displayLabel}</label>
-        `;
-
-        const checkbox = wrapper.querySelector("input");
-
-        checkbox.addEventListener("change", function () {
-            if (this.checked) {
-                handleLog({
-                    nationalIndex,
-                    afrikaans,
-                    english
-                });
-            }
+            elements.checklistContainer.appendChild(wrapper);
         });
-
-        elements.checklistContainer.appendChild(wrapper);
-    });
-
-	
-	}
+    }
 
     return { init };
 
-	})();
+})();
 
 document.addEventListener("DOMContentLoaded", BushloggerApp.init);
