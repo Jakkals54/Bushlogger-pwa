@@ -346,46 +346,56 @@ const BushloggerApp = (() => {
 
     // ------------------------ RENDER CHECKLIST ------------------------
     function renderChecklist() {
-        const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
-        elements.checklistContainer.innerHTML = "";
+    const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
+    elements.checklistContainer.innerHTML = "";
 
-        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-            .map(opt => parseInt(opt.value));
+    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+        .map(opt => parseInt(opt.value));
 
-        if (!state.speciesColumnIndices.length) return;
+    if (!state.speciesColumnIndices.length) return;
 
-        state.checklist.forEach(row => {
-            const nationalIndex = row[0] || "";
-            const afrikaans = row[1] || "";
-            const english = row[2] || "";
+    let firstMatchCheckbox = null; // will hold first checkbox to scroll to
 
-            if (!nationalIndex) return;
+    state.checklist.forEach(row => {
+        const nationalIndex = row[0] || "";
+        const afrikaans = row[1] || "";
+        const english = row[2] || "";
 
-            // Filter by search term
-            if (searchTerm) {
-                const combined = `${afrikaans} ${english}`.toLowerCase();
-                if (!combined.includes(searchTerm)) return;
+        if (!nationalIndex) return;
+
+        // Filter by search term
+        if (searchTerm) {
+            const combined = `${afrikaans} ${english}`.toLowerCase();
+            if (!combined.includes(searchTerm)) return;
+        }
+
+        const displayLabel = `${afrikaans} / ${english}`;
+        const id = "chk_" + nationalIndex;
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `
+            <input type="checkbox" id="${id}">
+            <label for="${id}">${nationalIndex} - ${displayLabel}</label>
+        `;
+
+        const checkbox = wrapper.querySelector("input");
+        checkbox.addEventListener("change", function () {
+            if (this.checked) {
+                handleLog({ nationalIndex, afrikaans, english });
             }
-
-            const displayLabel = `${afrikaans} / ${english}`;
-            const id = "chk_" + nationalIndex;
-
-            const wrapper = document.createElement("div");
-            wrapper.innerHTML = `
-                <input type="checkbox" id="${id}">
-                <label for="${id}">${nationalIndex} - ${displayLabel}</label>
-            `;
-
-            const checkbox = wrapper.querySelector("input");
-            checkbox.addEventListener("change", function () {
-                if (this.checked) {
-                    handleLog({ nationalIndex, afrikaans, english });
-                }
-            });
-
-            elements.checklistContainer.appendChild(wrapper);
         });
+
+        elements.checklistContainer.appendChild(wrapper);
+
+        // Mark the first match for auto-scroll
+        if (!firstMatchCheckbox && searchTerm) firstMatchCheckbox = checkbox;
+    });
+
+    // Auto-scroll first match
+    if (firstMatchCheckbox) {
+        firstMatchCheckbox.scrollIntoView({ block: "nearest" });
     }
+}
 
     return { init };
 
