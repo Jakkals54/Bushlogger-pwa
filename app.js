@@ -102,12 +102,23 @@ const BushloggerApp = (() => {
     }
 
     // ------------------------ LOGGING ------------------------
+	//-----------Species Extraction------------------
     async function handleLog(speciesOverride = null, notesOverride = null, observerOverride = null) {
-        const species = String(
-    speciesOverride !== null && speciesOverride !== undefined
-        ? speciesOverride
-        : elements.species.value).trim();
+    let nationalIndex = "";
+	let afrikaans = "";
+	let english = "";
+	let speciesDisplay = "";
 
+if (speciesOverride && typeof speciesOverride === "object") {
+    nationalIndex = speciesOverride.nationalIndex;
+    afrikaans = speciesOverride.afrikaans;
+    english = speciesOverride.english;
+    speciesDisplay = `${nationalIndex} - ${afrikaans} / ${english}`;
+} else {
+    speciesDisplay = elements.species.value.trim();
+}
+
+//--------------Observer Input-------------------		
 const observerValue = elements.observer.value.trim();
 const observer = String(
     observerOverride !== null && observerOverride !== undefined
