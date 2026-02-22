@@ -62,18 +62,13 @@ const BushloggerApp = (() => {
 
     // ------------------------ Event Binding ------------------------
     function bindEvents() {
-        elements.logButton.addEventListener("click", () => handleLog());
-        elements.actionButton.addEventListener("click", handleAction);
-        elements.selectAll.addEventListener("change", toggleSelectAll);
-        elements.gpsToggle.addEventListener("change", updateGPSStatus);
-        elements.csvInput.addEventListener("change", handleCSVLoad);
-        elements.csvSpeciesColumn.addEventListener("change", () => {
-        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-                                              .map(opt => parseInt(opt.value));
-            renderChecklist();
-        });
-        document.addEventListener("change", updateSelectionState);
-    }
+    elements.logButton.addEventListener("click", () => handleLog());
+    elements.actionButton.addEventListener("click", handleAction);
+    elements.selectAll.addEventListener("change", toggleSelectAll);
+    elements.gpsToggle.addEventListener("change", updateGPSStatus);
+    elements.csvInput.addEventListener("change", handleCSVLoad);
+    document.addEventListener("change", updateSelectionState);
+}
 
     // ------------------------ GPS ------------------------
     function updateGPSStatus() {
