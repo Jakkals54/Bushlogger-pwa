@@ -321,7 +321,7 @@ const notes = String(
    //------------------RENDER CHECKLIST--------------------         
             renderChecklist();
         };
-        reader.readAsText(file);
+        reader.readAsText(file, "UTF-8");
     }
 
     function renderChecklist() {
