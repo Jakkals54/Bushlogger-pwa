@@ -147,7 +147,18 @@ const notes = String(
         }
 
         const gps = await getGPS();
-        const entry = { date, time, observer, species, notes, lat: gps.lat, lon: gps.lon };
+        const entry = {
+    date,
+    time,
+    observer,
+    nationalIndex,
+    afrikaans,
+    english,
+    species: speciesDisplay,
+    notes,
+    lat: gps.lat,
+    lon: gps.lon
+};
 
         if (state.editIndex !== null) {
             state.sightings[state.editIndex] = entry;
