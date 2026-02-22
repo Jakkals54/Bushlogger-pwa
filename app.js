@@ -328,7 +328,6 @@ const notes = String(
 
     elements.checklistContainer.innerHTML = "";
 
-    // Make sure we have selected columns
     state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
         .map(opt => parseInt(opt.value));
 
@@ -336,37 +335,38 @@ const notes = String(
 
     state.checklist.forEach(row => {
 
-        // Build display label (English / Afrikaans etc.)
-        const displayValues = state.speciesColumnIndices
-            .map(i => row[i] || "")
-            .filter(v => v.trim() !== "");
+        const nationalIndex = row[0] || "";
+        const afrikaans = row[1] || "";
+        const english = row[2] || "";
 
-        if (displayValues.length === 0) return;
+        if (!nationalIndex) return;
 
-        const displayLabel = displayValues.join(" / ");
+        const displayLabel = `${afrikaans} / ${english}`;
 
-        // Choose ONE value to log (first selected column)
-        const logValue = row[state.speciesColumnIndices[0]];
-
-        const id = "chk_" + displayLabel.replace(/\s+/g, "_");
+        const id = "chk_" + nationalIndex;
 
         const wrapper = document.createElement("div");
 
         wrapper.innerHTML = `
             <input type="checkbox" id="${id}">
-            <label for="${id}">${displayLabel}</label>
+            <label for="${id}">${nationalIndex} - ${displayLabel}</label>
         `;
 
         const checkbox = wrapper.querySelector("input");
 
         checkbox.addEventListener("change", function () {
             if (this.checked) {
-                handleLog(logValue);
+                handleLog({
+                    nationalIndex,
+                    afrikaans,
+                    english
+                });
             }
         });
 
         elements.checklistContainer.appendChild(wrapper);
     });
+}
 	
 	}
 
