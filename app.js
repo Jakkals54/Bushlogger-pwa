@@ -50,6 +50,56 @@ const BushloggerApp = (() => {
         localStorage.setItem("bushlogger_sightings", JSON.stringify(state.sightings));
     }
 
+    //-------------- Add to cacheElements()-----------------------
+elements.checklistSearch = document.getElementById("checklistSearch");
+
+//------------------ Add in bindEvents()----------------------------
+elements.checklistSearch.addEventListener("input", renderChecklist);
+
+//------------------ Update renderChecklist() to filter by search:----
+function renderChecklist() {
+    const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
+
+    elements.checklistContainer.innerHTML = "";
+
+    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+        .map(opt => parseInt(opt.value));
+
+    if (!state.speciesColumnIndices.length) return;
+
+    state.checklist.forEach(row => {
+        const nationalIndex = row[0] || "";
+        const afrikaans = row[1] || "";
+        const english = row[2] || "";
+
+        if (!nationalIndex) return;
+
+        //------------------- Filter by search term----------------
+        if (searchTerm) {
+            const combined = `${afrikaans} ${english}`.toLowerCase();
+            if (!combined.includes(searchTerm)) return;
+        }
+
+        const displayLabel = `${afrikaans} / ${english}`;
+        const id = "chk_" + nationalIndex;
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `
+            <input type="checkbox" id="${id}">
+            <label for="${id}">${nationalIndex} - ${displayLabel}</label>
+        `;
+
+        const checkbox = wrapper.querySelector("input");
+        checkbox.addEventListener("change", function () {
+            if (this.checked) {
+                handleLog({ nationalIndex, afrikaans, english });
+            }
+        });
+
+        elements.checklistContainer.appendChild(wrapper);
+    });
+}
+
     // ------------------------ Observers ------------------------
     function populateObservers() {
         elements.datalist.innerHTML = "";
