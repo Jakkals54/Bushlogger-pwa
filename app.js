@@ -147,6 +147,8 @@ const notes = String(
         }
 
         const gps = await getGPS();
+		
+	//---------------Entry Object-----------------------
         const entry = {
     date,
     time,
