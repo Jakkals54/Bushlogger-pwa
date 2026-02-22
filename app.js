@@ -1,4 +1,4 @@
-// ------------------------ BushLogger App v1.5 Updated ------------------------
+// ------------------------ BushLogger App v1.5 with Search ------------------------
 const BushloggerApp = (() => {
 
     // ------------------------ State ------------------------
@@ -37,9 +37,9 @@ const BushloggerApp = (() => {
         elements.gpsToggle = document.getElementById("gpsToggle");
         elements.gpsStatus = document.getElementById("gpsStatus");
         elements.csvInput = document.getElementById("csvInput");
-        elements.checklistContainer = document.getElementById("checklistContainer");
         elements.csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
-        elements.checklistSearch = document.getElementById("checklistSearch");
+        elements.checklistContainer = document.getElementById("checklistContainer");
+        elements.checklistSearch = document.getElementById("checklistSearch"); // <-- new
     }
 
     // ------------------------ Local Storage ------------------------
@@ -50,59 +50,6 @@ const BushloggerApp = (() => {
     function saveToStorage() {
         localStorage.setItem("bushlogger_sightings", JSON.stringify(state.sightings));
     }
-
-    //-------------- Add to cacheElements()-----------------------
-elements.checklistSearch = document.getElementById("checklistSearch");
-
-//------------------ Add in bindEvents()----------------------------
-elements.checklistSearch.addEventListener("input", renderChecklist);
-    if(elements.checklistSearch){
-    elements.checklistSearch.addEventListener("input", renderChecklist);
-}
-
-//------------------ Update renderChecklist() to filter by search:----
-function renderChecklist() {
-    const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
-
-    elements.checklistContainer.innerHTML = "";
-
-    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-        .map(opt => parseInt(opt.value));
-
-    if (!state.speciesColumnIndices.length) return;
-
-    state.checklist.forEach(row => {
-        const nationalIndex = row[0] || "";
-        const afrikaans = row[1] || "";
-        const english = row[2] || "";
-
-        if (!nationalIndex) return;
-
-        //------------------- Filter by search term----------------
-        if (searchTerm) {
-            const combined = `${afrikaans} ${english}`.toLowerCase();
-            if (!combined.includes(searchTerm)) return;
-        }
-
-        const displayLabel = `${afrikaans} / ${english}`;
-        const id = "chk_" + nationalIndex;
-
-        const wrapper = document.createElement("div");
-        wrapper.innerHTML = `
-            <input type="checkbox" id="${id}">
-            <label for="${id}">${nationalIndex} - ${displayLabel}</label>
-        `;
-
-        const checkbox = wrapper.querySelector("input");
-        checkbox.addEventListener("change", function () {
-            if (this.checked) {
-                handleLog({ nationalIndex, afrikaans, english });
-            }
-        });
-
-        elements.checklistContainer.appendChild(wrapper);
-    });
-}
 
     // ------------------------ Observers ------------------------
     function populateObservers() {
@@ -121,6 +68,13 @@ function renderChecklist() {
         elements.selectAll.addEventListener("change", toggleSelectAll);
         elements.gpsToggle.addEventListener("change", updateGPSStatus);
         elements.csvInput.addEventListener("change", handleCSVLoad);
+
+        // Live search for checklist
+        if(elements.checklistSearch){
+            elements.checklistSearch.addEventListener("input", renderChecklist);
+        }
+
+        // Update selection state for checkboxes
         document.addEventListener("change", updateSelectionState);
     }
 
@@ -166,7 +120,6 @@ function renderChecklist() {
             speciesDisplay = elements.species.value.trim();
         }
 
-        //--------------Observer Input-------------------        
         const observerValue = elements.observer.value.trim();
         const observer = String(
             observerOverride !== null && observerOverride !== undefined
@@ -184,7 +137,7 @@ function renderChecklist() {
         const date = now.toISOString().split("T")[0];
         const time = now.toTimeString().split(" ")[0];
 
-        //---------- Duplicate check by national index-----------
+        // Duplicate check using national index
         const duplicateIndex = state.sightings.findIndex(s =>
             s.nationalIndex === nationalIndex && s.date === date
         );
@@ -196,7 +149,6 @@ function renderChecklist() {
 
         const gps = await getGPS();
 
-        //---------------Entry Object-----------------------
         const entry = {
             date,
             time,
@@ -361,7 +313,7 @@ function renderChecklist() {
 
         const reader = new FileReader();
         reader.onload = e => {
-            const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
+            const lines = e.target.result.split(/\r?\n/).filter(l=>l.trim());
             if (!lines.length) return;
 
             const separator = lines[0].includes("\t") ? "\t" : ",";
@@ -383,67 +335,54 @@ function renderChecklist() {
                     opt.textContent = h;
                     elements.csvSpeciesColumn.appendChild(opt);
                 });
-                // default first column selected
                 elements.csvSpeciesColumn.selectedIndex = 0;
                 state.speciesColumnIndices = [0];
-
-                elements.csvSpeciesColumn.addEventListener("change", () => {
-                    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-                        .map(opt => parseInt(opt.value));
-                    renderChecklist();
-                });
             }
 
             renderChecklist();
         };
-
         reader.readAsText(file, "UTF-8");
     }
 
+    // ------------------------ RENDER CHECKLIST ------------------------
     function renderChecklist() {
-    // Get search term
-    const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
+        const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
+        elements.checklistContainer.innerHTML = "";
 
-    // Clear container
-    elements.checklistContainer.innerHTML = "";
+        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+            .map(opt => parseInt(opt.value));
 
-    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-        .map(opt => parseInt(opt.value));
+        if (!state.speciesColumnIndices.length) return;
 
-    if (!state.speciesColumnIndices.length) return;
+        state.checklist.forEach(row => {
+            const nationalIndex = row[0] || "";
+            const afrikaans = row[1] || "";
+            const english = row[2] || "";
 
-    state.checklist.forEach(row => {
-        const nationalIndex = row[0] || "";
-        const afrikaans = row[1] || "";
-        const english = row[2] || "";
+            if (!nationalIndex) return;
 
-        if (!nationalIndex) return;
-
-        // Filter by search term (both Afrikaans & English)
-        if (searchTerm) {
-            const combined = `${afrikaans} ${english}`.toLowerCase();
-            if (!combined.includes(searchTerm)) return;
-        }
-
-        const displayLabel = `${afrikaans} / ${english}`;
-        const id = "chk_" + nationalIndex;
-
-        const wrapper = document.createElement("div");
-        wrapper.innerHTML = `
-            <input type="checkbox" id="${id}">
-            <label for="${id}">${nationalIndex} - ${displayLabel}</label>
-        `;
-
-        const checkbox = wrapper.querySelector("input");
-        checkbox.addEventListener("change", function () {
-            if (this.checked) {
-                handleLog({ nationalIndex, afrikaans, english });
+            // Filter by search term
+            if (searchTerm) {
+                const combined = `${afrikaans} ${english}`.toLowerCase();
+                if (!combined.includes(searchTerm)) return;
             }
-        });
 
-        elements.checklistContainer.appendChild(wrapper);
-    });
-}
+            const displayLabel = `${afrikaans} / ${english}`;
+            const id = "chk_" + nationalIndex;
+
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = `
+                <input type="checkbox" id="${id}">
+                <label for="${id}">${nationalIndex} - ${displayLabel}</label>
+            `;
+
+            const checkbox = wrapper.querySelector("input");
+            checkbox.addEventListener("change", function () {
+                if (this.checked) {
+                    handleLog({ nationalIndex, afrikaans, english });
+                }
+            });
+
             elements.checklistContainer.appendChild(wrapper);
         });
     }
