@@ -39,6 +39,7 @@ const BushloggerApp = (() => {
         elements.csvInput = document.getElementById("csvInput");
         elements.checklistContainer = document.getElementById("checklistContainer");
         elements.csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
+        elements.checklistSearch = document.getElementById("checklistSearch");
     }
 
     // ------------------------ Local Storage ------------------------
@@ -55,6 +56,9 @@ elements.checklistSearch = document.getElementById("checklistSearch");
 
 //------------------ Add in bindEvents()----------------------------
 elements.checklistSearch.addEventListener("input", renderChecklist);
+    if(elements.checklistSearch){
+    elements.checklistSearch.addEventListener("input", renderChecklist);
+}
 
 //------------------ Update renderChecklist() to filter by search:----
 function renderChecklist() {
@@ -397,37 +401,49 @@ function renderChecklist() {
     }
 
     function renderChecklist() {
-        elements.checklistContainer.innerHTML = "";
+    // Get search term
+    const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
 
-        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-            .map(opt => parseInt(opt.value));
+    // Clear container
+    elements.checklistContainer.innerHTML = "";
 
-        if (!state.speciesColumnIndices.length) return;
+    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+        .map(opt => parseInt(opt.value));
 
-        state.checklist.forEach(row => {
-            const nationalIndex = row[0] || "";
-            const afrikaans = row[1] || "";
-            const english = row[2] || "";
+    if (!state.speciesColumnIndices.length) return;
 
-            if (!nationalIndex) return;
+    state.checklist.forEach(row => {
+        const nationalIndex = row[0] || "";
+        const afrikaans = row[1] || "";
+        const english = row[2] || "";
 
-            const displayLabel = `${afrikaans} / ${english}`;
-            const id = "chk_" + nationalIndex;
+        if (!nationalIndex) return;
 
-            const wrapper = document.createElement("div");
+        // Filter by search term (both Afrikaans & English)
+        if (searchTerm) {
+            const combined = `${afrikaans} ${english}`.toLowerCase();
+            if (!combined.includes(searchTerm)) return;
+        }
 
-            wrapper.innerHTML = `
-                <input type="checkbox" id="${id}">
-                <label for="${id}">${nationalIndex} - ${displayLabel}</label>
-            `;
+        const displayLabel = `${afrikaans} / ${english}`;
+        const id = "chk_" + nationalIndex;
 
-            const checkbox = wrapper.querySelector("input");
-            checkbox.addEventListener("change", function () {
-                if (this.checked) {
-                    handleLog({ nationalIndex, afrikaans, english });
-                }
-            });
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `
+            <input type="checkbox" id="${id}">
+            <label for="${id}">${nationalIndex} - ${displayLabel}</label>
+        `;
 
+        const checkbox = wrapper.querySelector("input");
+        checkbox.addEventListener("change", function () {
+            if (this.checked) {
+                handleLog({ nationalIndex, afrikaans, english });
+            }
+        });
+
+        elements.checklistContainer.appendChild(wrapper);
+    });
+}
             elements.checklistContainer.appendChild(wrapper);
         });
     }
