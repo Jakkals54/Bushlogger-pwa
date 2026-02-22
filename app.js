@@ -390,7 +390,7 @@ const notes = String(
 
         elements.checklistContainer.appendChild(wrapper);
     });
-}
+
 	
 	}
 
