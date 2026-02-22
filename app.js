@@ -136,10 +136,10 @@ const notes = String(
         const date = now.toISOString().split("T")[0];
         const time = now.toTimeString().split(" ")[0];
 
-        // Duplicate check
+        //---------- Duplicate check-----------
         const duplicateIndex = state.sightings.findIndex(s =>
-            String(s.species).toLowerCase() === species.toLowerCase() && s.date === date
-        );
+   		s.nationalIndex === nationalIndex && s.date === date
+);
         if (duplicateIndex !== -1 && state.editIndex === null) {
             const confirmReplace = confirm(`Species "${species}" already logged today at listing ${duplicateIndex+1}.\nReplace previous entry?`);
             if (!confirmReplace) return;
