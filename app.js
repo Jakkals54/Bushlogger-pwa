@@ -42,7 +42,7 @@ const BushloggerApp = (() => {
         elements.checklistSearch = document.getElementById("checklistSearch");
         
 });
-    }
+    
 
     // ------------------------ Local Storage ------------------------
     function loadFromStorage() {
