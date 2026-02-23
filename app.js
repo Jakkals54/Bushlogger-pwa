@@ -65,7 +65,8 @@ const BushloggerApp = (() => {
             elements.datalist.appendChild(option);
        //-- });
     }
-
+}                                
+                
     // ------------------------ Event Binding ------------------------
     function bindEvents() {
         elements.logButton.addEventListener("click", () => handleLog());
