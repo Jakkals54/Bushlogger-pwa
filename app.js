@@ -40,28 +40,23 @@ const BushloggerApp = (() => {
         elements.csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
         elements.checklistContainer = document.getElementById("checklistContainer");
         elements.checklistSearch = document.getElementById("checklistSearch");
-        
-});
-    
+    }
 
     // ------------------------ Local Storage ------------------------
     function loadFromStorage() {
-    state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
-    state.observers = JSON.parse(localStorage.getItem("bushlogger_observers")) || ["Guest"];
-}
+        state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
+        state.observers = JSON.parse(localStorage.getItem("bushlogger_observers")) || ["Guest"];
     }
 
-    //-------------------------Save to Storage--------------------------
     function saveToStorage() {
         localStorage.setItem("bushlogger_sightings", JSON.stringify(state.sightings));
     }
 
-    //-------------------------Save Observers List-----------------------
     function saveObservers() {
-    localStorage.setItem("bushlogger_observers", JSON.stringify(state.observers));
+        localStorage.setItem("bushlogger_observers", JSON.stringify(state.observers));
     }
 
-    // -------------------------Observers --------------------------------
+    // ------------------------ Observers ------------------------
     function populateObservers() {
         elements.datalist.innerHTML = "";
         state.observers.forEach(name => {
@@ -79,21 +74,18 @@ const BushloggerApp = (() => {
         elements.gpsToggle.addEventListener("change", updateGPSStatus);
         elements.csvInput.addEventListener("change", handleCSVLoad);
 
-        // Live search for checklist
         if(elements.checklistSearch){
             elements.checklistSearch.addEventListener("input", renderChecklist);
         }
 
-        // Update selection state for checkboxes
         document.addEventListener("change", updateSelectionState);
     }
 
-    // ------------------------ GPS Status------------------------
+    // ------------------------ GPS ------------------------
     function updateGPSStatus() {
         elements.gpsStatus.textContent = elements.gpsToggle.checked ? "GPS ON" : "GPS OFF";
     }
 
-    //--------------------------GPS Co-ordinates------------------
     function getGPS() {
         return new Promise(resolve => {
             if (!elements.gpsToggle.checked) {
@@ -115,7 +107,7 @@ const BushloggerApp = (() => {
         });
     }
 
-    // ------------------------ LOGGING Records------------------------
+    // ------------------------ Logging ------------------------
     async function handleLog(speciesOverride = null, notesOverride = null, observerOverride = null) {
         let nationalIndex = "";
         let afrikaans = "";
@@ -132,37 +124,26 @@ const BushloggerApp = (() => {
         }
 
         const observerValue = elements.observer.value.trim();
-        const observer = String(
-    //--------------------- Update recent observers-------------
+        const observer = observerOverride || observerValue || "Guest";
+
+        // Update recent observers
         if (observer && observer !== "Guest") {
+            state.observers = state.observers.filter(name => name !== observer);
+            state.observers.unshift(observer);
+            if (state.observers.length > 5) {
+                state.observers = state.observers.slice(0, 5);
+            }
+            saveObservers();
+            populateObservers();
+        }
 
-    // ---------------------Remove if already exists---------
-        state.observers = state.observers.filter(name => name !== observer);
-
-    // ---------------------Add to top------------------------
-        state.observers.unshift(observer);
-
-    // ----------------------Keep only last 5------------------
-        if (state.observers.length > 5) {
-        state.observers = state.observers.slice(0, 5);
-    }
-
-        saveObservers();
-        populateObservers();
-}
-        );
-
-        const notes = String(
-            notesOverride !== null && notesOverride !== undefined
-                ? notesOverride
-                : elements.notes.value.trim()
-        );
+        const notes = notesOverride !== undefined ? notesOverride : elements.notes.value.trim();
 
         const now = new Date();
         const date = now.toISOString().split("T")[0];
         const time = now.toTimeString().split(" ")[0];
 
-        // Duplicate check using national index
+        // Duplicate check
         const duplicateIndex = state.sightings.findIndex(s =>
             s.nationalIndex === nationalIndex && s.date === date
         );
@@ -174,18 +155,7 @@ const BushloggerApp = (() => {
 
         const gps = await getGPS();
 
-        const entry = {
-            date,
-            time,
-            observer,
-            nationalIndex,
-            afrikaans,
-            english,
-            species: speciesDisplay,
-            notes,
-            lat: gps.lat,
-            lon: gps.lon
-        };
+        const entry = { date, time, observer, nationalIndex, afrikaans, english, species: speciesDisplay, notes, lat: gps.lat, lon: gps.lon };
 
         if (state.editIndex !== null) {
             state.sightings[state.editIndex] = entry;
@@ -200,7 +170,6 @@ const BushloggerApp = (() => {
         if (!speciesOverride) clearForm();
     }
 
-    //------------------------Clear Form---------------------
     function clearForm() {
         elements.species.value = "";
         elements.notes.value = "";
@@ -230,21 +199,19 @@ const BushloggerApp = (() => {
         updateSelectionState();
     }
 
-    //-------------------------List Select All---------------------
     function toggleSelectAll() {
         const checkboxes = document.querySelectorAll('.selectSighting');
         checkboxes.forEach(cb => cb.checked = elements.selectAll.checked);
         updateSelectionState();
     }
 
-    //--------------------------Update Records----------------
     function updateSelectionState() {
         const selected = document.querySelectorAll('.selectSighting:checked').length;
         document.getElementById("selectedCount").textContent = `(${selected} selected)`;
         elements.actionButton.disabled = selected === 0;
     }
 
-    // ------------------------ BULK ACTIONS ------------------------
+    // ------------------------ Bulk Actions ------------------------
     function handleAction() {
         const action = elements.actionSelector.value;
         const selectedCheckboxes = document.querySelectorAll('.selectSighting:checked');
@@ -267,7 +234,6 @@ const BushloggerApp = (() => {
         }
     }
 
-    //----------------------- Edit Sighting -----------------------
     function editSighting(index) {
         const s = state.sightings[index];
         elements.species.value = s.species;
@@ -276,7 +242,6 @@ const BushloggerApp = (() => {
         state.editIndex = index;
     }
 
-    //------------------------ Delete Sightings---------------------
     function deleteSightings(indices) {
         if (confirm("Delete selected sightings?")) {
             indices.sort((a,b)=>b-a).forEach(i => state.sightings.splice(i,1));
@@ -285,7 +250,7 @@ const BushloggerApp = (() => {
         }
     }
 
-    // ------------------------ CSV EXPORT ------------------------
+    // ------------------------ CSV & Excel ------------------------
     function exportCSV(list) {
         if (!list.length) { alert("No sightings to export."); return; }
         let csv = "Date,Time,Observer,Species/ Object,Notes,Latitude,Longitude\n";
@@ -303,7 +268,6 @@ const BushloggerApp = (() => {
         URL.revokeObjectURL(url);
     }
 
-    // ------------------------ EXCEL EXPORT ------------------------
     function exportExcel(list) {
         if (!list.length) { alert("No sightings to export."); return; }
         let table = `<table><tr><th>Date</th><th>Time</th><th>Observer</th><th>Species/Object</th><th>Notes</th><th>Latitude</th><th>Longitude</th></tr>`;
@@ -322,7 +286,6 @@ const BushloggerApp = (() => {
         URL.revokeObjectURL(url);
     }
 
-    // ------------------------ SHARE ------------------------
     function shareSightings(list) {
         if (!list.length) { alert("No sightings to share."); return; }
         let message = "";
@@ -336,7 +299,7 @@ const BushloggerApp = (() => {
         }
     }
 
-    // ------------------------ CSV CHECKLIST ------------------------
+    // ------------------------ CSV Checklist ------------------------
     function handleCSVLoad(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -348,15 +311,11 @@ const BushloggerApp = (() => {
 
             const separator = lines[0].includes("\t") ? "\t" : ",";
 
-            // Headers
             state.csvHeaders = lines[0].split(separator).map(h => h.trim()).filter(h => h);
-
-            // Data rows
             state.checklist = lines.slice(1)
                 .map(line => line.split(separator).map(c => c.trim()))
                 .filter(row => row.length > 0);
 
-            // Populate dropdown
             if(elements.csvSpeciesColumn){
                 elements.csvSpeciesColumn.innerHTML = "";
                 state.csvHeaders.forEach((h,i)=>{
@@ -374,58 +333,49 @@ const BushloggerApp = (() => {
         reader.readAsText(file, "UTF-8");
     }
 
-    // ------------------------ RENDER CHECKLIST ------------------------
     function renderChecklist() {
-    const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
-    elements.checklistContainer.innerHTML = "";
+        const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
+        elements.checklistContainer.innerHTML = "";
 
-    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-        .map(opt => parseInt(opt.value));
+        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+            .map(opt => parseInt(opt.value));
+        if (!state.speciesColumnIndices.length) return;
 
-    if (!state.speciesColumnIndices.length) return;
+        let firstMatchCheckbox = null;
 
-    let firstMatchCheckbox = null; // will hold first checkbox to scroll to
+        state.checklist.forEach(row => {
+            const nationalIndex = row[0] || "";
+            const afrikaans = row[1] || "";
+            const english = row[2] || "";
+            if (!nationalIndex) return;
 
-    state.checklist.forEach(row => {
-        const nationalIndex = row[0] || "";
-        const afrikaans = row[1] || "";
-        const english = row[2] || "";
-
-        if (!nationalIndex) return;
-
-        // Filter by search term
-        if (searchTerm) {
-            const combined = `${afrikaans} ${english}`.toLowerCase();
-            if (!combined.includes(searchTerm)) return;
-        }
-
-        const displayLabel = `${afrikaans} / ${english}`;
-        const id = "chk_" + nationalIndex;
-
-        const wrapper = document.createElement("div");
-        wrapper.innerHTML = `
-            <input type="checkbox" id="${id}">
-            <label for="${id}">${nationalIndex} - ${displayLabel}</label>
-        `;
-
-        const checkbox = wrapper.querySelector("input");
-        checkbox.addEventListener("change", function () {
-            if (this.checked) {
-                handleLog({ nationalIndex, afrikaans, english });
+            if (searchTerm) {
+                const combined = `${afrikaans} ${english}`.toLowerCase();
+                if (!combined.includes(searchTerm)) return;
             }
+
+            const displayLabel = `${afrikaans} / ${english}`;
+            const id = "chk_" + nationalIndex;
+
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = `
+                <input type="checkbox" id="${id}">
+                <label for="${id}">${nationalIndex} - ${displayLabel}</label>
+            `;
+
+            const checkbox = wrapper.querySelector("input");
+            checkbox.addEventListener("change", function () {
+                if (this.checked) {
+                    handleLog({ nationalIndex, afrikaans, english });
+                }
+            });
+
+            elements.checklistContainer.appendChild(wrapper);
+            if (!firstMatchCheckbox && searchTerm) firstMatchCheckbox = checkbox;
         });
 
-        elements.checklistContainer.appendChild(wrapper);
-
-        // Mark the first match for auto-scroll
-        if (!firstMatchCheckbox && searchTerm) firstMatchCheckbox = checkbox;
-    });
-
-    // Auto-scroll first match
-    if (firstMatchCheckbox) {
-        firstMatchCheckbox.scrollIntoView({ block: "nearest" });
+        if (firstMatchCheckbox) firstMatchCheckbox.scrollIntoView({ block: "nearest" });
     }
-}
 
     return { init };
 
