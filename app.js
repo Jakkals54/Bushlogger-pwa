@@ -39,7 +39,12 @@ const BushloggerApp = (() => {
         elements.csvInput = document.getElementById("csvInput");
         elements.csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
         elements.checklistContainer = document.getElementById("checklistContainer");
-        elements.checklistSearch = document.getElementById("checklistSearch"); // <-- new
+        elements.checklistSearch = document.getElementById("checklistSearch");
+        elements.observerInput = document.getElementById("observerInput");
+        elements.observerSelect = document.getElementById("observerSelect");
+        elements.observerSelect.addEventListener("change", function () {
+        elements.observerInput.value = this.value;
+});
     }
 
     // ------------------------ Local Storage ------------------------
