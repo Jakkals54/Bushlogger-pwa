@@ -40,23 +40,28 @@ const BushloggerApp = (() => {
         elements.csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
         elements.checklistContainer = document.getElementById("checklistContainer");
         elements.checklistSearch = document.getElementById("checklistSearch");
-        elements.observerInput = document.getElementById("observerInput");
-        elements.observerSelect = document.getElementById("observerSelect");
-        elements.observerSelect.addEventListener("change", function () {
-        elements.observerInput.value = this.value;
+        
 });
     }
 
     // ------------------------ Local Storage ------------------------
     function loadFromStorage() {
-        state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
+    state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
+    state.observers = JSON.parse(localStorage.getItem("bushlogger_observers")) || ["Guest"];
+}
     }
 
+    //-------------------------Save to Storage--------------------------
     function saveToStorage() {
         localStorage.setItem("bushlogger_sightings", JSON.stringify(state.sightings));
     }
 
-    // ------------------------ Observers ------------------------
+    //-------------------------Save Observers List-----------------------
+    function saveObservers() {
+    localStorage.setItem("bushlogger_observers", JSON.stringify(state.observers));
+    }
+
+    // -------------------------Observers --------------------------------
     function populateObservers() {
         elements.datalist.innerHTML = "";
         state.observers.forEach(name => {
@@ -83,11 +88,12 @@ const BushloggerApp = (() => {
         document.addEventListener("change", updateSelectionState);
     }
 
-    // ------------------------ GPS ------------------------
+    // ------------------------ GPS Status------------------------
     function updateGPSStatus() {
         elements.gpsStatus.textContent = elements.gpsToggle.checked ? "GPS ON" : "GPS OFF";
     }
 
+    //--------------------------GPS Co-ordinates------------------
     function getGPS() {
         return new Promise(resolve => {
             if (!elements.gpsToggle.checked) {
@@ -109,7 +115,7 @@ const BushloggerApp = (() => {
         });
     }
 
-    // ------------------------ LOGGING ------------------------
+    // ------------------------ LOGGING Records------------------------
     async function handleLog(speciesOverride = null, notesOverride = null, observerOverride = null) {
         let nationalIndex = "";
         let afrikaans = "";
@@ -127,9 +133,23 @@ const BushloggerApp = (() => {
 
         const observerValue = elements.observer.value.trim();
         const observer = String(
-            observerOverride !== null && observerOverride !== undefined
-                ? observerOverride
-                : (observerValue || "Guest")
+    //--------------------- Update recent observers-------------
+        if (observer && observer !== "Guest") {
+
+    // ---------------------Remove if already exists---------
+        state.observers = state.observers.filter(name => name !== observer);
+
+    // ---------------------Add to top------------------------
+        state.observers.unshift(observer);
+
+    // ----------------------Keep only last 5------------------
+        if (state.observers.length > 5) {
+        state.observers = state.observers.slice(0, 5);
+    }
+
+        saveObservers();
+        populateObservers();
+}
         );
 
         const notes = String(
@@ -180,13 +200,14 @@ const BushloggerApp = (() => {
         if (!speciesOverride) clearForm();
     }
 
+    //------------------------Clear Form---------------------
     function clearForm() {
         elements.species.value = "";
         elements.notes.value = "";
         elements.observer.value = "";
     }
 
-    // ------------------------ SUMMARY ------------------------
+    // ------------------------ Daily Summary ------------------------
     function render() {
         if (!elements.summaryBody) return;
         elements.summaryBody.innerHTML = "";
@@ -209,12 +230,14 @@ const BushloggerApp = (() => {
         updateSelectionState();
     }
 
+    //-------------------------List Select All---------------------
     function toggleSelectAll() {
         const checkboxes = document.querySelectorAll('.selectSighting');
         checkboxes.forEach(cb => cb.checked = elements.selectAll.checked);
         updateSelectionState();
     }
 
+    //--------------------------Update Records----------------
     function updateSelectionState() {
         const selected = document.querySelectorAll('.selectSighting:checked').length;
         document.getElementById("selectedCount").textContent = `(${selected} selected)`;
@@ -244,6 +267,7 @@ const BushloggerApp = (() => {
         }
     }
 
+    //----------------------- Edit Sighting -----------------------
     function editSighting(index) {
         const s = state.sightings[index];
         elements.species.value = s.species;
@@ -252,6 +276,7 @@ const BushloggerApp = (() => {
         state.editIndex = index;
     }
 
+    //------------------------ Delete Sightings---------------------
     function deleteSightings(indices) {
         if (confirm("Delete selected sightings?")) {
             indices.sort((a,b)=>b-a).forEach(i => state.sightings.splice(i,1));
