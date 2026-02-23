@@ -63,8 +63,8 @@ const BushloggerApp = (() => {
             const option = document.createElement("option");
             option.value = name;
             elements.datalist.appendChild(option);
-       //-- });
-    }
+    });
+    
 }                                
                 
     // ------------------------ Event Binding ------------------------
