@@ -235,6 +235,48 @@ const BushloggerApp = (() => {
         elements.actionButton.disabled = selected === 0;
     }
 
+    // ------------------------ Bulk Actions ------------------------
+function handleAction() {
+    const action = elements.actionSelector.value;
+    const selectedCheckboxes = document.querySelectorAll('.selectSighting:checked');
+
+    if (!selectedCheckboxes.length) {
+        alert("Select at least one sighting.");
+        return;
+    }
+
+    const indices = Array.from(selectedCheckboxes).map(cb =>
+        parseInt(cb.dataset.index)
+    );
+
+    if (action === "edit") {
+        if (indices.length > 1) {
+            alert("Edit only one sighting at a time.");
+            return;
+        }
+        editSighting(indices[0]);
+    } else if (action === "delete") {
+        deleteSightings(indices);
+    }
+}
+
+function editSighting(index) {
+    const s = state.sightings[index];
+    elements.species.value = s.species;
+    elements.notes.value = s.notes;
+    elements.observer.value = s.observer;
+    state.editIndex = index;
+}
+
+function deleteSightings(indices) {
+    if (confirm("Delete selected sightings?")) {
+        indices.sort((a, b) => b - a)
+               .forEach(i => state.sightings.splice(i, 1));
+        saveToStorage();
+        render();
+    }
+}
+
     // ------------------------ CSV Checklist ------------------------
     function handleCSVLoad(event) {
 
