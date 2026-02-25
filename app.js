@@ -286,6 +286,8 @@ function editSighting(index) {
     elements.species.value = s.species;
     elements.notes.value = s.notes;
     elements.observer.value = s.observer;
+    //-Added next line 25Feb1041------
+    elements.observer.dispatchEvent(new Event("input"));
     state.editIndex = index;
 }
 
