@@ -41,8 +41,6 @@ const BushloggerApp = (() => {
         elements.csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
     }
 
-        console.log("Dropdown element:", elements.csvSpeciesColumn);
-    
     // ------------------------ Local Storage ------------------------
     function loadFromStorage() {
         state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
@@ -318,49 +316,29 @@ const BushloggerApp = (() => {
     }
 
     function renderChecklist() {
+        elements.checklistContainer.innerHTML = "";
+        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+                                          .map(opt => parseInt(opt.value));
 
-    elements.checklistContainer.innerHTML = "";
+        state.checklist.forEach(row=>{
+            // Combine all selected columns for label
+            const speciesArray = state.speciesColumnIndices.map(i => row[i] || "").filter(v => v);
+            if(speciesArray.length === 0) return;
 
-    // Make sure we have selected columns
-    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-        .map(opt => parseInt(opt.value));
-
-    if (!state.speciesColumnIndices.length) return;
-
-    state.checklist.forEach(row => {
-
-        // Build display label (English / Afrikaans etc.)
-        const displayValues = state.speciesColumnIndices
-            .map(i => row[i] || "")
-            .filter(v => v.trim() !== "");
-
-        if (displayValues.length === 0) return;
-
-        const displayLabel = displayValues.join(" / ");
-
-        // Choose ONE value to log (first selected column)
-        const logValue = row[state.speciesColumnIndices[0]];
-
-        const id = "chk_" + displayLabel.replace(/\s+/g, "_");
-
-        const wrapper = document.createElement("div");
-
-        wrapper.innerHTML = `
-            <input type="checkbox" id="${id}">
-            <label for="${id}">${displayLabel}</label>
-        `;
-
-        const checkbox = wrapper.querySelector("input");
-
-        checkbox.addEventListener("change", function () {
-            if (this.checked) {
-                handleLog(logValue);
-            }
+            const speciesLabel = speciesArray.join(" / ");
+            const id = "chk_" + speciesLabel.replace(/\s+/g,"_");
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${speciesLabel}</label>`;
+            const checkbox = wrapper.querySelector("input");
+            checkbox.addEventListener("change", e=>{
+                if(e.target.checked){
+                    speciesArray.forEach(species => handleLog(species));
+                    e.target.checked = false; // auto untick
+                }
+            });
+            elements.checklistContainer.appendChild(wrapper);
         });
-
-        elements.checklistContainer.appendChild(wrapper);
-    });
-}
+    }
 
     return { init };
 
