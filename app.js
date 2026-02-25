@@ -41,6 +41,8 @@ const BushloggerApp = (() => {
         elements.csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
     }
 
+        console.log("Dropdown element:", elements.csvSpeciesColumn);
+    
     // ------------------------ Local Storage ------------------------
     function loadFromStorage() {
         state.sightings = JSON.parse(localStorage.getItem("bushlogger_sightings")) || [];
