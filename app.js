@@ -149,17 +149,21 @@ const BushloggerApp = (() => {
         const date = now.toISOString().split("T")[0];
         const time = now.toTimeString().split(" ")[0];
 
-        const duplicateIndex = state.sightings.findIndex(s =>
-            s.nationalIndex === nationalIndex && s.date === date
-        );
+       let duplicateIndex = -1;
 
-        if (duplicateIndex !== -1 && state.editIndex === null) {
-            const confirmReplace = confirm(
-                `Species "${speciesDisplay}" already logged today at listing ${duplicateIndex + 1}.\nReplace previous entry?`
-            );
-            if (!confirmReplace) return;
-            state.sightings.splice(duplicateIndex, 1);
-        }
+if (state.editIndex === null) {
+    duplicateIndex = state.sightings.findIndex(s =>
+        s.nationalIndex === nationalIndex && s.date === date
+    );
+
+    if (duplicateIndex !== -1) {
+        const confirmReplace = confirm(
+            `Species "${speciesDisplay}" already logged today at listing ${duplicateIndex + 1}.\nReplace previous entry?`
+        );
+        if (!confirmReplace) return;
+        state.sightings.splice(duplicateIndex, 1);
+    }
+}
 
         const gps = await getGPS();
 
