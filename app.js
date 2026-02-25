@@ -322,24 +322,42 @@ const BushloggerApp = (() => {
         state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
                                           .map(opt => parseInt(opt.value));
 
-        state.checklist.forEach(row=>{
-            // Combine all selected columns for label
-            const speciesArray = state.speciesColumnIndices.map(i => row[i] || "").filter(v => v);
-            if(speciesArray.length === 0) return;
+        state.checklist.forEach(row => {
+    //-------Combine all selected columns for label-----
+    const selectedIndices = state.speciesColumnIndices;
 
-            const speciesLabel = speciesArray.join(" / ");
-            const id = "chk_" + speciesLabel.replace(/\s+/g,"_");
-            const wrapper = document.createElement("div");
-            wrapper.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${speciesLabel}</label>`;
-            const checkbox = wrapper.querySelector("input");
-            checkbox.addEventListener("change", e=>{
-                if(e.target.checked){
-                    speciesArray.forEach(species => handleLog(species));
-                    e.target.checked = false; // auto untick
-                }
-            });
-            elements.checklistContainer.appendChild(wrapper);
-        });
+    if (!selectedIndices || selectedIndices.length === 0) return;
+
+    // Build display label (all selected columns)
+    const displayValues = selectedIndices
+        .map(i => row[i] || "")
+        .filter(v => v.trim() !== "");
+
+    if (displayValues.length === 0) return;
+
+    const displayLabel = displayValues.join(" / ");
+
+    // IMPORTANT: Choose ONE value for logging (first selected column)
+    const logValue = row[selectedIndices[0]];
+
+    const id = "chk_" + displayLabel.replace(/\s+/g, "_");
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+        <input type="checkbox" id="${id}">
+        <label for="${id}">${displayLabel}</label>
+    `;
+
+    const checkbox = wrapper.querySelector("input");
+
+    checkbox.addEventListener("change", function () {
+        if (this.checked) {
+            handleLog(logValue); // only log one value
+        }
+    });
+
+    elements.checklistContainer.appendChild(wrapper);
+});
     }
 
     return { init };
