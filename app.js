@@ -148,7 +148,8 @@ const BushloggerApp = (() => {
         const observerValue = elements.observer.value.trim();
         const observer = observerOverride || observerValue || "Guest";
 
-        if (observer && observer !== "Guest") {
+        //-- if (observer && observer !== "Guest") {
+            if (observer && observer !== "Guest" && state.editIndex === null) {
             state.observers = state.observers.filter(name => name !== observer);
             state.observers.unshift(observer);
             if (state.observers.length > 5) {
