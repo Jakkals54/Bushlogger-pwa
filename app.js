@@ -102,17 +102,36 @@ const BushloggerApp = (() => {
     }
 
     // ------------------------ LOGGING ------------------------
+    
+        //const species = String(speciesOverride ?? elements.species.value).trim();
+        //if (!species) { alert("Enter species/object."); return; }
+
+        //const observer = String(observerOverride ?? elements.observer.value.trim() || "Guest");
+        //if (!state.observers.includes(observer)) //{
+          //  state.observers.push(observer);
+            //populateObservers();
+        //}
+
+        //const notes = String(notesOverride ?? elements.notes.value.trim());
     async function handleLog(speciesOverride = null, notesOverride = null, observerOverride = null) {
-        const species = String(speciesOverride ?? elements.species.value).trim();
-        if (!species) { alert("Enter species/object."); return; }
+        const species = String(
+    speciesOverride !== null && speciesOverride !== undefined
+        ? speciesOverride
+        : elements.species.value
+).trim();
 
-        const observer = String(observerOverride ?? elements.observer.value.trim() || "Guest");
-        if (!state.observers.includes(observer)) //{
-            state.observers.push(observer);
-            populateObservers();
-        }
+const observerValue = elements.observer.value.trim();
+const observer = String(
+    observerOverride !== null && observerOverride !== undefined
+        ? observerOverride
+        : (observerValue || "Guest")
+);
 
-        const notes = String(notesOverride ?? elements.notes.value.trim());
+const notes = String(
+    notesOverride !== null && notesOverride !== undefined
+        ? notesOverride
+        : elements.notes.value.trim()
+);
 
         const now = new Date();
         const date = now.toISOString().split("T")[0];
