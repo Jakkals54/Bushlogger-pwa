@@ -296,44 +296,34 @@ const notes = String(
 
     // ------------------------ CSV CHECKLIST ------------------------
     function handleCSVLoad(event) {
-            const file = event.target.files[0];
-        if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = e => {
-            const lines = e.target.result.split(/\r?\n/).filter(l=>l.trim());
-            if (!lines.length) return;
+    const file = event.target.files[0];
+    if (!file) return;
 
-            // Detect separator: tab or comma
-            const separator = lines[0].includes("\t") ? "\t" : ",";
+    elements.csvFileName.textContent = file.name;
 
-            // Headers
-            state.csvHeaders = lines[0].split(separator).map(h => h.trim()).filter(h => h);
+    const reader = new FileReader();
 
-            // Data rows
-            state.checklist = lines.slice(1)
-                .map(line => line.split(separator).map(c => c.trim()))
-                .filter(row => row.length > 0);
+    reader.onload = function(e) {
 
-            // Populate dropdown
-            if(elements.csvSpeciesColumn){
-                elements.csvSpeciesColumn.innerHTML = "";
-                state.csvHeaders.forEach((h,i)=>{
-                    const opt = document.createElement("option");
-                    opt.value = i;
-                    opt.textContent = h;
-                    elements.csvSpeciesColumn.appendChild(opt);
-                });
-                // default first column selected
-                elements.csvSpeciesColumn.selectedIndex = 0;
-                state.speciesColumnIndices = [0];
-            }
+        const text = e.target.result;
 
-            renderChecklist();
-        };
-        reader.readAsText(file);
-    }
+        const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+        if (!lines.length) return;
 
+        // Extract headers
+        state.csvHeaders = lines[0].split(",").map(h => h.trim());
+
+        // Extract data rows
+        state.checklist = lines.slice(1).map(line =>
+            line.split(",").map(cell => cell.trim())
+        );
+
+        populateSpeciesColumnDropdown();
+    };
+
+    reader.readAsText(file, "UTF-8");
+}
     //---------------RENDER CHECKLIST-------------------------
     function renderChecklist() {
 
