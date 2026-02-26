@@ -334,6 +334,7 @@ const notes = String(
         reader.readAsText(file);
     }
 
+    //---------------RENDER CHECKLIST-------------------------
     function renderChecklist() {
         elements.checklistContainer.innerHTML = "";
         state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
@@ -350,11 +351,10 @@ const notes = String(
             wrapper.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${speciesLabel}</label>`;
             const checkbox = wrapper.querySelector("input");
             checkbox.addEventListener("change", e=>{
-                if(e.target.checked){
-                    speciesArray.forEach(species => handleLog(species));
-                    e.target.checked = false; // auto untick
-                }
-            });
+            if(e.target.checked){
+            speciesArray.forEach(species => handleLog(species));
+    }
+});
             elements.checklistContainer.appendChild(wrapper);
         });
     }
