@@ -277,8 +277,7 @@ const BushloggerApp = (() => {
 
     // ------------------------ CSV CHECKLIST ------------------------
     function handleCSVLoad(event) {
-    console.log("CSV load triggered");
-        const file = event.target.files[0];
+            const file = event.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
