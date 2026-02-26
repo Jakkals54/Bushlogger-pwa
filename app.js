@@ -1,4 +1,4 @@
-// ------------------------ BushLogger App v1.5 Updated ------------------------                                               // ------------------------ BushLogger App v1.5 Updated ------------------------
+// ------------------------ BushLogger App v1.5 Updated ------------------------
 const BushloggerApp = (() => {
 
     // ------------------------ State ------------------------
@@ -68,7 +68,7 @@ const BushloggerApp = (() => {
         elements.gpsToggle.addEventListener("change", updateGPSStatus);
         elements.csvInput.addEventListener("change", handleCSVLoad);
         elements.csvSpeciesColumn.addEventListener("change", () => {
-        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+            state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
                                               .map(opt => parseInt(opt.value));
             renderChecklist();
         });
@@ -103,23 +103,16 @@ const BushloggerApp = (() => {
 
     // ------------------------ LOGGING ------------------------
     async function handleLog(speciesOverride = null, notesOverride = null, observerOverride = null) {
-        const species = String(
-    speciesOverride !== null && speciesOverride !== undefined
-        ? speciesOverride
-        : elements.species.value).trim();
+        const species = String(speciesOverride ?? elements.species.value).trim();
+        if (!species) { alert("Enter species/object."); return; }
 
-const observerValue = elements.observer.value.trim();
-const observer = String(
-    observerOverride !== null && observerOverride !== undefined
-        ? observerOverride
-        : (observerValue || "Guest")
-);
+        const observer = String(observerOverride ?? elements.observer.value.trim() || "Guest");
+        if (!state.observers.includes(observer)) {
+            state.observers.push(observer);
+            populateObservers();
+        }
 
-const notes = String(
-    notesOverride !== null && notesOverride !== undefined
-        ? notesOverride
-        : elements.notes.value.trim()
-);
+        const notes = String(notesOverride ?? elements.notes.value.trim());
 
         const now = new Date();
         const date = now.toISOString().split("T")[0];
@@ -317,60 +310,38 @@ const notes = String(
                 state.speciesColumnIndices = [0];
             }
 
-   //------------------RENDER CHECKLIST--------------------         
             renderChecklist();
         };
         reader.readAsText(file);
     }
 
     function renderChecklist() {
+        elements.checklistContainer.innerHTML = "";
+        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+                                          .map(opt => parseInt(opt.value));
 
-    elements.checklistContainer.innerHTML = "";
+        state.checklist.forEach(row=>{
+            // Combine all selected columns for label
+            const speciesArray = state.speciesColumnIndices.map(i => row[i] || "").filter(v => v);
+            if(speciesArray.length === 0) return;
 
-    // Make sure we have selected columns
-    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-        .map(opt => parseInt(opt.value));
-
-    if (!state.speciesColumnIndices.length) return;
-
-    state.checklist.forEach(row => {
-
-        // Build display label (English / Afrikaans etc.)
-        const displayValues = state.speciesColumnIndices
-            .map(i => row[i] || "")
-            .filter(v => v.trim() !== "");
-
-        if (displayValues.length === 0) return;
-
-        const displayLabel = displayValues.join(" / ");
-
-        // Choose ONE value to log (first selected column)
-        const logValue = row[state.speciesColumnIndices[0]];
-
-        const id = "chk_" + displayLabel.replace(/\s+/g, "_");
-
-        const wrapper = document.createElement("div");
-
-        wrapper.innerHTML = `
-            <input type="checkbox" id="${id}">
-            <label for="${id}">${displayLabel}</label>
-        `;
-
-        const checkbox = wrapper.querySelector("input");
-
-        checkbox.addEventListener("change", function () {
-            if (this.checked) {
-                handleLog(logValue);
-            }
+            const speciesLabel = speciesArray.join(" / ");
+            const id = "chk_" + speciesLabel.replace(/\s+/g,"_");
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${speciesLabel}</label>`;
+            const checkbox = wrapper.querySelector("input");
+            checkbox.addEventListener("change", e=>{
+                if(e.target.checked){
+                    speciesArray.forEach(species => handleLog(species));
+                    e.target.checked = false; // auto untick
+                }
+            });
+            elements.checklistContainer.appendChild(wrapper);
         });
-
-        elements.checklistContainer.appendChild(wrapper);
-    });
-	
-	}
+    }
 
     return { init };
 
-	})();
+})();
 
 document.addEventListener("DOMContentLoaded", BushloggerApp.init);
