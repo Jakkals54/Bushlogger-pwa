@@ -1,4 +1,4 @@
-// ------------------------ BushLogger App v5.2 Updated ------------------------
+This is the current app.js i dont see some of the items you are talking about                                               // ------------------------ BushLogger App v1.5 Updated ------------------------
 const BushloggerApp = (() => {
 
     // ------------------------ State ------------------------
@@ -68,10 +68,8 @@ const BushloggerApp = (() => {
         elements.gpsToggle.addEventListener("change", updateGPSStatus);
         elements.csvInput.addEventListener("change", handleCSVLoad);
         elements.csvSpeciesColumn.addEventListener("change", () => {
-        elements.csvFileInput.addEventListener("change", handleCSVLoad);
-        //elements.csvSpeciesColumn.addEventListener("change", renderChecklist);
         state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-                .map(opt => parseInt(opt.value));
+                                              .map(opt => parseInt(opt.value));
             renderChecklist();
         });
         document.addEventListener("change", updateSelectionState);
@@ -104,23 +102,11 @@ const BushloggerApp = (() => {
     }
 
     // ------------------------ LOGGING ------------------------
-    
-        //const species = String(speciesOverride ?? elements.species.value).trim();
-        //if (!species) { alert("Enter species/object."); return; }
-
-        //const observer = String(observerOverride ?? elements.observer.value.trim() || "Guest");
-        //if (!state.observers.includes(observer)) //{
-          //  state.observers.push(observer);
-            //populateObservers();
-        //}
-
-        //const notes = String(notesOverride ?? elements.notes.value.trim());
     async function handleLog(speciesOverride = null, notesOverride = null, observerOverride = null) {
         const species = String(
     speciesOverride !== null && speciesOverride !== undefined
         ? speciesOverride
-        : elements.species.value
-).trim();
+        : elements.species.value).trim();
 
 const observerValue = elements.observer.value.trim();
 const observer = String(
@@ -298,39 +284,50 @@ const notes = String(
 
     // ------------------------ CSV CHECKLIST ------------------------
     function handleCSVLoad(event) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-    const file = event.target.files[0];
-    if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const lines = e.target.result.split(/\r?\n/).filter(l=>l.trim());
+            if (!lines.length) return;
 
-    elements.csvFileName.textContent = file.name;
+            // Detect separator: tab or comma
+            const separator = lines[0].includes("\t") ? "\t" : ",";
 
-    const reader = new FileReader();
+            // Headers
+            state.csvHeaders = lines[0].split(separator).map(h => h.trim()).filter(h => h);
 
-    reader.onload = function(e) {
+            // Data rows
+            state.checklist = lines.slice(1)
+                .map(line => line.split(separator).map(c => c.trim()))
+                .filter(row => row.length > 0);
 
-        const text = e.target.result;
+            // Populate dropdown
+            if(elements.csvSpeciesColumn){
+                elements.csvSpeciesColumn.innerHTML = "";
+                state.csvHeaders.forEach((h,i)=>{
+                    const opt = document.createElement("option");
+                    opt.value = i;
+                    opt.textContent = h;
+                    elements.csvSpeciesColumn.appendChild(opt);
+                });
+                // default first column selected
+                elements.csvSpeciesColumn.selectedIndex = 0;
+                state.speciesColumnIndices = [0];
+            }
 
-        const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
-        if (!lines.length) return;
+   //------------------RENDER CHECKLIST--------------------         
+            renderChecklist();
+        };
+        reader.readAsText(file);
+    }
 
-        // Extract headers
-        state.csvHeaders = lines[0].split(",").map(h => h.trim());
-
-        // Extract data rows
-        state.checklist = lines.slice(1).map(line =>
-            line.split(",").map(cell => cell.trim())
-        );
-
-        populateSpeciesColumnDropdown();
-    };
-
-    reader.readAsText(file, "UTF-8");
-}
-    //---------------RENDER CHECKLIST-------------------------
-  function renderChecklist() {
+    function renderChecklist() {
 
     elements.checklistContainer.innerHTML = "";
 
+    // Make sure we have selected columns
     state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
         .map(opt => parseInt(opt.value));
 
@@ -338,6 +335,7 @@ const notes = String(
 
     state.checklist.forEach(row => {
 
+        // Build display label (English / Afrikaans etc.)
         const displayValues = state.speciesColumnIndices
             .map(i => row[i] || "")
             .filter(v => v.trim() !== "");
@@ -345,6 +343,8 @@ const notes = String(
         if (displayValues.length === 0) return;
 
         const displayLabel = displayValues.join(" / ");
+
+        // Choose ONE value to log (first selected column)
         const logValue = row[state.speciesColumnIndices[0]];
 
         const id = "chk_" + displayLabel.replace(/\s+/g, "_");
@@ -366,10 +366,11 @@ const notes = String(
 
         elements.checklistContainer.appendChild(wrapper);
     });
-}
+	
+	}
 
-return { init };
+    return { init };
 
-})();
+	})();
 
 document.addEventListener("DOMContentLoaded", BushloggerApp.init);
