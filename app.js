@@ -35,62 +35,38 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ===============================
-// CLEAN CSV LOADER ONLY
+// CSV LOADING
 // ===============================
+elements.csvInput.addEventListener("change", handleCSVLoad);
+elements.csvSpeciesColumn.addEventListener("change", () => {
+    state.speciesColumnIndex = parseInt(elements.csvSpeciesColumn.value);
+    renderChecklist();
+});
 
-const csvInput = document.getElementById("csvInput");
-const csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
-
-csvInput.addEventListener("change", function () {
-
-    const file = this.files[0];
+function handleCSVLoad(e) {
+    const file = e.target.files[0];
     if (!file) return;
-
-    console.log("File selected:", file.name);
-
-    // Show filename next to input (optional visual confirmation)
-    csvInput.title = file.name;
 
     const reader = new FileReader();
 
-    reader.onload = function (e) {
-        const text = e.target.result;
-        console.log("File loaded successfully");
-        processCSV(text);
-    };
-
-    reader.onerror = function () {
-        console.error("Error reading file");
-    };
+    reader.onload = function (event) {
+        const text = event.target.result;
+        parseCSV(text);
+    //};
 
     reader.readAsText(file);
-});
+}
 
-function processCSV(text) {
+function parseCSV(text) {
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length < 2) return;
 
-    if (!text || text.trim() === "") {
-        console.error("CSV file empty");
-        return;
-    }
-
-    const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
-
-    if (lines.length === 0) {
-        console.error("No lines found");
-        return;
-    }
-
-    // Detect delimiter
-    let delimiter = ",";
-    if (lines[0].includes("\t")) delimiter = "\t";
-    if (lines[0].includes(";")) delimiter = ";";
-
-    console.log("Detected delimiter:", delimiter);
+    const delimiter = lines[0].includes("\t") ? "\t" : ",";
 
     const headers = lines[0].split(delimiter).map(h => h.trim());
-
-    console.log("Headers detected:", headers);
-
+    state.checklistData = lines.slice(1).map(line =>
+        line.split(delimiter).map(cell => cell.trim())
+    );
     // Clear dropdown
     csvSpeciesColumn.innerHTML = "";
 
