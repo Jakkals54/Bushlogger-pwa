@@ -68,8 +68,8 @@ const BushloggerApp = (() => {
         elements.gpsToggle.addEventListener("change", updateGPSStatus);
         elements.csvInput.addEventListener("change", handleCSVLoad);
         elements.csvSpeciesColumn.addEventListener("change", () => {
-        elements.csvFileInput.addEventListener("change", handleCSVLoad);
-        elements.csvSpeciesColumn.addEventListener("change", renderChecklist);
+        //elements.csvFileInput.addEventListener("change", handleCSVLoad);
+        //elements.csvSpeciesColumn.addEventListener("change", renderChecklist);
         state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
                 .map(opt => parseInt(opt.value));
             renderChecklist();
