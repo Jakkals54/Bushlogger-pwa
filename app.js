@@ -107,7 +107,7 @@ const BushloggerApp = (() => {
         if (!species) { alert("Enter species/object."); return; }
 
         const observer = String(observerOverride ?? elements.observer.value.trim() || "Guest");
-        if (!state.observers.includes(observer)) {
+        if (!state.observers.includes(observer)) //{
             state.observers.push(observer);
             populateObservers();
         }
