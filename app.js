@@ -1,5 +1,5 @@
 // ===============================
-// BushLogger v1.5 CLEAN BUILD
+// BushLogger v5 CLEAN BUILD
 // ===============================
 
 const state = {
