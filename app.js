@@ -1,4 +1,4 @@
-This is the current app.js i dont see some of the items you are talking about                                               // ------------------------ BushLogger App v1.5 Updated ------------------------
+// ------------------------ BushLogger App v1.5 Updated ------------------------                                               // ------------------------ BushLogger App v1.5 Updated ------------------------
 const BushloggerApp = (() => {
 
     // ------------------------ State ------------------------
