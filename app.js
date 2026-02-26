@@ -363,14 +363,13 @@ const notes = String(
 
         const checkbox = wrapper.querySelector("input");
 
-        // 🔥 THIS IS THE IMPORTANT PART
-        checkbox.addEventListener("change", function () {
-            if (this.checked) {
-                speciesArray.forEach(species => {
-                    handleLog(species);
-                });
-            }
-        });
+       checkbox.addEventListener("change", function () {
+    if (this.checked) {
+        // Always log ONLY the first selected column
+        const primarySpecies = speciesArray[0];
+        handleLog(primarySpecies);
+    }
+});
 
         elements.checklistContainer.appendChild(wrapper);
     });
