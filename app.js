@@ -327,11 +327,10 @@ const notes = String(
     reader.readAsText(file, "UTF-8");
 }
     //---------------RENDER CHECKLIST-------------------------
-   function renderChecklist() {
+  function renderChecklist() {
 
     elements.checklistContainer.innerHTML = "";
 
-    // Make sure we have selected columns
     state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
         .map(opt => parseInt(opt.value));
 
@@ -339,7 +338,6 @@ const notes = String(
 
     state.checklist.forEach(row => {
 
-        // Build display label (English / Afrikaans etc.)
         const displayValues = state.speciesColumnIndices
             .map(i => row[i] || "")
             .filter(v => v.trim() !== "");
@@ -347,8 +345,6 @@ const notes = String(
         if (displayValues.length === 0) return;
 
         const displayLabel = displayValues.join(" / ");
-
-        // Choose ONE value to log (first selected column)
         const logValue = row[state.speciesColumnIndices[0]];
 
         const id = "chk_" + displayLabel.replace(/\s+/g, "_");
@@ -371,7 +367,8 @@ const notes = String(
         elements.checklistContainer.appendChild(wrapper);
     });
 }
-    return { init };
+
+return { init };
 
 })();
 
