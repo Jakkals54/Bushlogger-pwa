@@ -52,7 +52,7 @@ function handleCSVLoad(e) {
     reader.onload = function (event) {
         const text = event.target.result;
         parseCSV(text);
-    //};
+    };
 
     reader.readAsText(file);
 }
@@ -67,23 +67,6 @@ function parseCSV(text) {
     state.checklistData = lines.slice(1).map(line =>
         line.split(delimiter).map(cell => cell.trim())
     );
-    // Clear dropdown
-    csvSpeciesColumn.innerHTML = "";
-
-    headers.forEach((header, index) => {
-        const option = document.createElement("option");
-        option.value = index;
-        option.textContent = header;
-        csvSpeciesColumn.appendChild(option);
-    });
-
-    if (headers.length > 0) {
-        csvSpeciesColumn.selectedIndex = 0;
-        console.log("Dropdown populated successfully");
-    } else {
-        console.error("No headers found");
-    }
-}
 
     // Populate dropdown
     elements.csvSpeciesColumn.innerHTML = "";
