@@ -256,3 +256,4 @@ function handleBulkAction() {
 // ===============================
 function save() {
     localStorage.setItem("sightings", JSON.stringify(state.sightings));
+}
