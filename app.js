@@ -120,7 +120,7 @@ function processCSV(text) {
 
     state.speciesColumnIndex = 0;
     renderChecklist();
-}
+//}
 
 function renderChecklist() {
     elements.checklistContainer.innerHTML = "";
