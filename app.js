@@ -352,6 +352,7 @@ const notes = String(
             const checkbox = wrapper.querySelector("input");
             checkbox.addEventListener("change", e=>{
             if(e.target.checked){
+            console.log("Checkbox clicked:", speciesArray);
             speciesArray.forEach(species => handleLog(species));
     }
 });
