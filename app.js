@@ -1,4 +1,4 @@
-// ------------------------ BushLogger App v1.5 Updated ------------------------
+// ------------------------ BushLogger App v5.2 Updated ------------------------
 const BushloggerApp = (() => {
 
     // ------------------------ State ------------------------
@@ -68,8 +68,8 @@ const BushloggerApp = (() => {
         elements.gpsToggle.addEventListener("change", updateGPSStatus);
         elements.csvInput.addEventListener("change", handleCSVLoad);
         elements.csvSpeciesColumn.addEventListener("change", () => {
-            state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-                                              .map(opt => parseInt(opt.value));
+        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+                .map(opt => parseInt(opt.value));
             renderChecklist();
         });
         document.addEventListener("change", updateSelectionState);
