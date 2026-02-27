@@ -170,7 +170,7 @@ if (observer && observer !== "Guest") {
     function clearForm() {
         elements.species.value = "";
         elements.notes.value = "";
-        elements.observer.value = "";
+        // elements.observer.value = "";
     }
 
     // ------------------------ SUMMARY ------------------------
