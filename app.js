@@ -50,7 +50,7 @@ const BushloggerApp = (() => {
         localStorage.setItem("bushlogger_sightings", JSON.stringify(state.sightings));
     }
 
-    // ------------------------ Observers ------------------------
+    // ------------------------Populate Observers ------------------------
     function populateObservers() {
     if (!elements.datalist) return;
 
@@ -114,11 +114,26 @@ const BushloggerApp = (() => {
         const species = String(speciesOverride ?? elements.species.value).trim();
         if (!species) { alert("Enter species/object."); return; }
 
-        const observer = String(observerOverride ?? elements.observer.value.trim() || "Guest");
-        if (!state.observers.includes(observer)) {
-            state.observers.push(observer);
-            populateObservers();
-        }
+        const observerValue = elements.observer.value.trim();
+        const observer = observerOverride || observerValue || "Guest";
+
+// Only update memory if manually typed or changed
+if (observer && observer !== "Guest") {
+
+    // Remove if exists
+    state.observers = state.observers.filter(name => name !== observer);
+
+    // Add to top
+    state.observers.unshift(observer);
+
+    // Keep only 5
+    if (state.observers.length > 5) {
+        state.observers = state.observers.slice(0, 5);
+    }
+
+    saveObservers();
+    populateObservers();
+}
 
         const notes = String(notesOverride ?? elements.notes.value.trim());
 
