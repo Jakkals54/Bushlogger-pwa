@@ -85,7 +85,7 @@ const BushloggerApp = (() => {
         elements.search.addEventListener("input", handleSearch);
 }    
             renderChecklist();
-        //});
+        });
         document.addEventListener("change", updateSelectionState);
     }
 
@@ -128,7 +128,7 @@ const BushloggerApp = (() => {
     // ------------------------ GPS ------------------------
     function updateGPSStatus() {
         elements.gpsStatus.textContent = elements.gpsToggle.checked ? "GPS ON" : "GPS OFF";
-    }
+   // }
 
     function getGPS() {
         return new Promise(resolve => {
