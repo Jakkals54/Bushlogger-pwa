@@ -52,13 +52,21 @@ const BushloggerApp = (() => {
 
     // ------------------------ Observers ------------------------
     function populateObservers() {
-        elements.datalist.innerHTML = "";
-        state.observers.forEach(name => {
-            const option = document.createElement("option");
-            option.value = name;
-            elements.datalist.appendChild(option);
-        });
+    if (!elements.datalist) return;
+
+    elements.datalist.innerHTML = "";
+
+    state.observers.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        elements.datalist.appendChild(option);
+    });
+
+    // Keep last used observer in input
+    if (state.observers.length > 0) {
+        elements.observer.value = state.observers[0];
     }
+}
 
     // ------------------------ Event Binding ------------------------
     function bindEvents() {
