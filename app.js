@@ -98,7 +98,7 @@ const BushloggerApp = (() => {
     }
 
     const filtered = state.checklist.filter(item =>
-        item.toLowerCase().includes(query)
+        item.name.toLowerCase().includes(query)
     );
 
     renderChecklist(filtered);
