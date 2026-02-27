@@ -65,6 +65,7 @@ const BushloggerApp = (() => {
     // ONLY set default if input is empty
     if (!elements.observer.value && state.observers.length > 0) {
         elements.observer.value = state.observers[0];
+        elements.observer.dispatchEvent(new Event("input"));
     }
 }
 
