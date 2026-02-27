@@ -380,7 +380,10 @@ const BushloggerApp = (() => {
         reader.readAsText(file);
     }
 
+    //-------------------RENDER CHECKLIST------------------------
+
     function renderChecklist() {
+        const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
         elements.checklistContainer.innerHTML = "";
         state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
                                           .map(opt => parseInt(opt.value));
