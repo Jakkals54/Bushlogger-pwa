@@ -119,7 +119,7 @@ const BushloggerApp = (() => {
         const observer = observerOverride || observerValue || "Guest";
 
 // Only update memory if manually typed or changed
-    if (observer && observer !== "Guest") {
+    if (observer && observer !== "Guest" && state.editIndex === null) {
 
     // Remove if exists
     state.observers = state.observers.filter(name => name !== observer);
