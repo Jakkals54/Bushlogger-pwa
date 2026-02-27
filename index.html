@@ -1,101 +1,89 @@
 <!DOCTYPE html>
- <html lang="en">
- <head>
-
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>BushLogger - PWA v1.5</title>
-
- <link rel="stylesheet" href="style.css">
- <link rel="manifest" href="manifest.json">
- </head>
- <body>
-
- <h1>🐦 BushLogger – Field Logging v5</h1>
- 
- <!-- -------- Load CSV Checklist -------- -->
-<section>
-	<h2>Optional Checklist CSV</h2>
-		<input type="file" id="csvInput" accept=".csv">
-		<p>Load your master species/object list. Ticking adds it to daily log automatically.</p>
+<html lang="en">
+<head>
+	
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+<title>Bos Waarnemer - FJN v1.5</title>
+<link rel="stylesheet" href="style.css">
+	<link rel="manifest" href="manifest.json">
+</head>
+	
+	<body>
+		<h1>🐦 BushLogger – Field Logging v1.5</h1>
 		
-		<label for="csvSpeciesColumn">Select Species Column:</label>
-		<select id="csvSpeciesColumn"></select>
-
-	<div id="checklistContainer" style="max-height:300px; overflow-y:auto;"></div>
-</section>
-
-	<!-- -------- Log a Sighting -------- -->
-<section>
-	<h2>Log a Sighting</h2>
-	
-	<label for="observer">Observer</label>
-	<input id="observer" type="text" list="observerList" placeholder="Type or select observer">
-	<datalist id="observerList"></datalist>
-	
-	<label for="species">Species / Object</label>
-	<input type="text" id="species" placeholder="Species Name">
-
-	<label for="notes">Notes</label>
-	<textarea id="notes" placeholder="Notes"></textarea>
-
-	<!-- GPS Toggle -->
-
-	<label class="switch">
-	<input type="checkbox" id="gpsToggle" checked>
-	<span class="slider"></span>
-	</label>
-	<span id="gpsStatus">GPS ON</span>
-
-	<br><br>
-	<button id="logButton">💾 Log Sighting</button>
-
-	</section>
-	
-	<!-- -------- Summary Table & Actions -------- -->
-	<section>
-	<h2>Daily Sightings Summary</h2>
-	<table id="summaryTable" border="1"> <thead>
-
-	<tr>
-		<th><input type="checkbox" id="selectAll">
-		</th> <th>Listing No</th>
-		<th>Date</th>
-		<th>Species / Object</th>
-		<th>Observer</th>
-		<th>GPS</th>
-		<th>Notes</th>
-		</tr>
-		</thead>
-		<tbody id="summaryBody"></tbody>
-		</table>
-
-		<div class="action-bar">
-		<div class="action-left">
-		<strong>Bulk Actions</strong>
+	<!-----------Search Window---------------->
+		<label for="checklistSearch">Search (Afrikaans / English):</label>
+		<input type="text" id="checklistSearch" placeholder="Type part of name...">
+		<div id="checklistContainer" style="max-height:300px; overflow-y:auto;"></div> 
+		
+	<!-- -------- Load CSV Checklist -------- -->
+		<section> <h2>Optional Checklist CSV</h2>
+			<input type="file" id="csvInput" accept=".csv">
+			<p>Laai eie lys. Merk om by daaglikse waarnemings-lys te sit.</p>
+			<label for="csvSpeciesColumn">Selekteer Kollom(me):</label>
+			<select id="csvSpeciesColumn" multiple size="3"></select>
+			<div id="checklistContainer" style="max-height:300px; overflow-y:auto;"></div>
+		</section>
+	<!------------- Log a Sighting ------------->
+		<section> <h2>Log Waarnemings</h2>
+			
+	<!---------- Observation Select----------->
+			<div id="observerSection">
+				<label for="observerInput">Observer:</label>
+				<input type="text" id="observerInput" placeholder="Enter name">
+				<input id="observer" list="observerList" placeholder="Observer name">
+				<datalist id="observerList"></datalist>
+			</div>
+			<label for="species">Spesie / Voorwerp</label>
+			<input type="text" id="species" placeholder="Species Name">
+			<label for="notes">Notas</label>
+			<textarea id="notes" placeholder="Notes"></textarea>
+	<!---------------- GPS Toggle ----------------->
+			<label class="switch">
+				<input type="checkbox" id="gpsToggle" checked>
+				<span class="slider"></span>
+			</label> <span id="gpsStatus">GPS AAN</span>
+			
+			<br>
+			<br>
+			<button id="logButton">💾 Log Waarneming</button>
+		</section>
+		
+	<!-- -------- Summary Table & Actions -------- --> 
+		<section>
+			<h2>Daaglikse Waarnemings Opsommings</h2>
+			<table id="summaryTable" border="1">
+				<thead>
+					<tr>
+						<th><input type="checkbox" id="selectAll"></th>
+						<th>Listing No</th>
+						<th>Date</th>
+						<th>Species / Object</th>
+						<th>Observer</th>
+						<th>GPS</th>
+						<th>Notes</th>
+					</tr> 
+				</thead>
+				<tbody id="summaryBody"></tbody>
+			</table>
+			
+<div class="action-bar">
+	<div class="action-left">
+		<strong>Veelvuldige Aksies</strong>
 		<span id="selectedCount">(0 selected)</span>
-		</div>
-
-		<div class="action-right">
-		<select id="actionSelector">
-		<option value="">Choose action...</option>
-		<option value="edit">✏ Edit</option>
-		<option value="delete">🗑 Delete</option>
-		<option value="export">📤 Export</option>
-		<option value="share">📱 Share</option>
-		<option value="exportAllCSV">📄 Save ALL as CSV</option>
-		<option value="exportAllExcel">📊 Save ALL as Excel</option>
-		</select>
-
-		<button id="actionButton" disabled>Apply</button>
-		</div> </div>
-		
-	</section>
-	<script src="app.js"></script> </body>
-	
-	
-	
-	
-	
-	
-	
+	</div>
+<div class="action-right">
+	<select id="actionSelector">
+		<option value="">Kies aksie...</option>
+		<option value="edit">✏ Wysig</option>
+		<option value="delete">🗑 Verwyder</option>
+		<option value="export">📤 Voer-ui</option>
+		<option value="share">📱 Deel</option>
+		<option value="exportAllCSV">📄 Spaar almal as CSV</option>
+		<option value="exportAllExcel">📊 Spaar almal as Excel</option>
+	</select>
+	<button id="actionButton" disabled>Wend Aan</button>
+</div> </div> 
+		</section> <script src="app.js"></script> </body> </html>
