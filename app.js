@@ -62,8 +62,8 @@ const BushloggerApp = (() => {
         elements.datalist.appendChild(option);
     });
 
-    // Keep last used observer in input
-    if (state.observers.length > 0) {
+    // ONLY set default if input is empty
+    if (!elements.observer.value && state.observers.length > 0) {
         elements.observer.value = state.observers[0];
     }
 }
