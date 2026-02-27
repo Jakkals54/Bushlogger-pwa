@@ -155,6 +155,26 @@ function renderChecklist(list) {
     });
 }
 
+//------------------------ADD SELECTION IN CSV TO DAILY SIGHTINGS--------------    
+function addToDailySightings(bird) {
+
+    // prevent duplicates using national bird number
+    const exists = state.dailySightings.some(
+        item => item.number == bird.number
+    );
+
+    if (exists) return;
+
+    state.dailySightings.push({
+        number: bird.number,
+        name: bird.name,
+        observer: currentObserver(),
+        notes: ""
+    });
+
+    renderDailySightings();
+}
+    
 //----------------------------------LOG FROM CHECKLIST--------------------    
 function logFromChecklist(row) {
     const birdNumber = row[0];
