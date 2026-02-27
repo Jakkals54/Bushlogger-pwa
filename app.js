@@ -88,6 +88,7 @@ const BushloggerApp = (() => {
         document.addEventListener("change", updateSelectionState);
     }
 
+    
     //----------------Search CSV List----------------------
     function handleSearch() {
     const query = elements.search.value.toLowerCase().trim();
@@ -97,13 +98,15 @@ const BushloggerApp = (() => {
         return;
     }
 
-    const filtered = state.checklist.filter(item =>
-        item.name.toLowerCase().includes(query)
+    const filtered = state.checklist.filter(row =>
+        row.some(cell =>
+            cell && cell.toLowerCase().includes(query)
+        )
     );
 
     renderChecklist(filtered);
 }
-    
+  
 
     // ------------------------ GPS ------------------------
     function updateGPSStatus() {
