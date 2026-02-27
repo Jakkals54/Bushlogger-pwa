@@ -16,6 +16,20 @@ function init() {
     populateObservers();
     bind();
     render();
+    document.getElementById("checklistContainer")
+    .addEventListener("change", function (e) {
+        if (e.target.classList.contains("checkItem")) {
+
+            const birdNumber = e.target.dataset.id;
+            const bird = state.checklist.find(b => b.number == birdNumber);
+
+            if (bird) {
+                addToDailySightings(bird);
+            }
+
+            e.target.checked = false; // optional: auto-uncheck
+        }
+    });
 }
 
 //---------------------------------CACHE ELEMENTS---------------------
