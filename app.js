@@ -39,6 +39,7 @@ const BushloggerApp = (() => {
         elements.csvInput = document.getElementById("csvInput");
         elements.checklistContainer = document.getElementById("checklistContainer");
         elements.csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
+        elements.search = document.getElementById("checklistSearch");
     }
 
     // ------------------------ Local Storage ------------------------
@@ -78,11 +79,31 @@ const BushloggerApp = (() => {
         elements.csvInput.addEventListener("change", handleCSVLoad);
         elements.csvSpeciesColumn.addEventListener("change", () => {
             state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-                                              .map(opt => parseInt(opt.value));
+                 .map(opt => parseInt(opt.value));
+        if (elements.search) {
+        elements.search.addEventListener("input", handleSearch);
+}    
             renderChecklist();
         });
         document.addEventListener("change", updateSelectionState);
     }
+
+    //----------------Search CSV List----------------------
+    function handleSearch() {
+    const query = elements.search.value.toLowerCase().trim();
+
+    if (!query) {
+        renderChecklist(state.checklist);
+        return;
+    }
+
+    const filtered = state.checklist.filter(item =>
+        item.toLowerCase().includes(query)
+    );
+
+    renderChecklist(filtered);
+}
+    
 
     // ------------------------ GPS ------------------------
     function updateGPSStatus() {
