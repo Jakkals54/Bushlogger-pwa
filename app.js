@@ -382,31 +382,56 @@ const BushloggerApp = (() => {
 
     //-------------------RENDER CHECKLIST------------------------
 
-    function renderChecklist() {
-        const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
-        elements.checklistContainer.innerHTML = "";
-        state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
-                                          .map(opt => parseInt(opt.value));
+   function renderChecklist() {
+    const searchTerm = elements.checklistSearch?.value.trim().toLowerCase() || "";
+    elements.checklistContainer.innerHTML = "";
 
-        state.checklist.forEach(row=>{
-            // Combine all selected columns for label
-            const speciesArray = state.speciesColumnIndices.map(i => row[i] || "").filter(v => v);
-            if(speciesArray.length === 0) return;
+    state.speciesColumnIndices = Array.from(elements.csvSpeciesColumn.selectedOptions)
+        .map(opt => parseInt(opt.value));
 
-            const speciesLabel = speciesArray.join(" / ");
-            const id = "chk_" + speciesLabel.replace(/\s+/g,"_");
-            const wrapper = document.createElement("div");
-            wrapper.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${speciesLabel}</label>`;
-            const checkbox = wrapper.querySelector("input");
-            checkbox.addEventListener("change", e=>{
-                if(e.target.checked){
-                    speciesArray.forEach(species => handleLog(species));
-                    e.target.checked = false; // auto untick
-                }
-            });
-            elements.checklistContainer.appendChild(wrapper);
+    if (!state.speciesColumnIndices.length) return;
+
+    let firstMatchCheckbox = null; // will hold first checkbox to scroll to
+
+    state.checklist.forEach(row => {
+        const nationalIndex = row[0] || "";
+        const afrikaans = row[1] || "";
+        const english = row[2] || "";
+
+        if (!nationalIndex) return;
+
+        // Filter by search term
+        if (searchTerm) {
+            const combined = `${afrikaans} ${english}`.toLowerCase();
+            if (!combined.includes(searchTerm)) return;
+        }
+
+        const displayLabel = `${afrikaans} / ${english}`;
+        const id = "chk_" + nationalIndex;
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `
+            <input type="checkbox" id="${id}">
+            <label for="${id}">${nationalIndex} - ${displayLabel}</label>`;
+
+        const checkbox = wrapper.querySelector("input");
+        checkbox.addEventListener("change", function () {
+            if (this.checked) {
+                handleLog({ nationalIndex, afrikaans, english });
+            }
         });
+
+        elements.checklistContainer.appendChild(wrapper);
+
+        // Mark the first match for auto-scroll
+        if (!firstMatchCheckbox && searchTerm) firstMatchCheckbox = checkbox;
+    });
+
+    // Auto-scroll first match
+    if (firstMatchCheckbox) {
+        firstMatchCheckbox.scrollIntoView({ block: "nearest" });
     }
+}
 
     return { init };
 
