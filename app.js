@@ -90,19 +90,25 @@ const BushloggerApp = (() => {
 
     
     //----------------Search CSV List----------------------
-    function handleSearch() {
-    const query = elements.search.value.toLowerCase().trim();
+   function handleSearch() {
+    const query = elements.search.value.trim().toLowerCase();
 
+    // If empty → show full list
     if (!query) {
         renderChecklist(state.checklist);
         return;
     }
 
-    const filtered = state.checklist.filter(row =>
-        row.some(cell =>
-            cell && cell.toLowerCase().includes(query)
-        )
-    );
+    const filtered = state.checklist.filter(row => {
+        // Make sure row exists and is an array
+        if (!Array.isArray(row)) return false;
+
+        // Search every cell in the row
+        return row.some(cell =>
+            typeof cell === "string" &&
+            cell.toLowerCase().includes(query)
+        );
+    });
 
     renderChecklist(filtered);
 }
