@@ -85,7 +85,7 @@ const BushloggerApp = (() => {
         elements.search.addEventListener("input", handleSearch);
 }    
             renderChecklist();
-        });
+        //});
         document.addEventListener("change", updateSelectionState);
     }
 
