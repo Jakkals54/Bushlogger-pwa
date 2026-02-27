@@ -39,7 +39,8 @@ const BushloggerApp = (() => {
         elements.csvInput = document.getElementById("csvInput");
         elements.checklistContainer = document.getElementById("checklistContainer");
         elements.csvSpeciesColumn = document.getElementById("csvSpeciesColumn");
-        elements.search = document.getElementById("checklistSearch");
+        //elements.search = document.getElementById("checklistSearch");
+        elements.checklistSearch = document.getElementById("checklistSearch");
     }
 
     // ------------------------ Local Storage ------------------------
@@ -88,30 +89,40 @@ const BushloggerApp = (() => {
         document.addEventListener("change", updateSelectionState);
     }
 
-    
-    //----------------Search CSV List----------------------
-   function handleSearch() {
-    const query = elements.search.value.trim().toLowerCase();
+     // Live search for checklist
+        if(elements.checklistSearch){
+            elements.checklistSearch.addEventListener("input", renderChecklist);
+        }
 
-    // If empty → show full list
-    if (!query) {
-        renderChecklist(state.checklist);
-        return;
+        // Update selection state for checkboxes
+        document.addEventListener("change", updateSelectionState);
     }
 
-    const filtered = state.checklist.filter(row => {
+    
+    
+    //----------------Search CSV List----------------------
+  // function handleSearch() {
+    //const query = elements.search.value.trim().toLowerCase();
+
+    // If empty → show full list
+    //if (!query) {
+      //  renderChecklist(state.checklist);
+        //return;
+    //}
+
+    //const filtered = state.checklist.filter(row => {
         // Make sure row exists and is an array
-        if (!Array.isArray(row)) return false;
+      //  if (!Array.isArray(row)) return false;
 
         // Search every cell in the row
-        return row.some(cell =>
-            typeof cell === "string" &&
-            cell.toLowerCase().includes(query)
-        );
-    });
+        //return row.some(cell =>
+          //  typeof cell === "string" &&
+            //cell.toLowerCase().includes(query)
+      //  );
+    //});
 
-    renderChecklist(filtered);
-}
+    //renderChecklist(filtered);
+//}
   
 
     // ------------------------ GPS ------------------------
