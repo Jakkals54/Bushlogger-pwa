@@ -9,6 +9,7 @@ const state = {
 
 const elements = {};
 
+    //------------------------------INIT()------------------------
 function init() {
     cache();
     loadStorage();
@@ -17,6 +18,7 @@ function init() {
     render();
 }
 
+    //-----------------------------CACHE---------------------------
 function cache() {
     elements.search = document.getElementById("checklistSearch");
     elements.container = document.getElementById("checklistContainer");
@@ -29,25 +31,30 @@ function cache() {
     elements.summaryBody = document.getElementById("summaryBody");
 }
 
+    //---------------------------BIND EVENTLISTNER-----------------------
 function bind() {
     elements.csvInput.addEventListener("change", loadCSV);
     elements.search.addEventListener("input", handleSearch);
     elements.logButton.addEventListener("click", handleLog);
 }
 
+    //---------------------------LOAD STORAGE----------------------------
 function loadStorage() {
     state.sightings = JSON.parse(localStorage.getItem("bush_sightings")) || [];
     state.observers = JSON.parse(localStorage.getItem("bush_observers")) || ["Guest"];
 }
 
+    //---------------------------SAVE SIGHTINGS---------------------------
 function saveSightings() {
     localStorage.setItem("bush_sightings", JSON.stringify(state.sightings));
 }
 
+    //---------------------------SAVE OBSERVERS-----------------------------
 function saveObservers() {
     localStorage.setItem("bush_observers", JSON.stringify(state.observers));
 }
 
+    //---------------------------POPULATE OBSERVERS-------------------------
 function populateObservers() {
     elements.datalist.innerHTML = "";
 
@@ -62,6 +69,7 @@ function populateObservers() {
     }
 }
 
+    //----------------------------LOAD CSV---------------------------------------
 function loadCSV(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -82,6 +90,7 @@ function loadCSV(event) {
     reader.readAsText(file, "UTF-8");
 }
 
+    //--------------------------------HANDLE SEARCH-------------------------------
 function handleSearch() {
     const query = elements.search.value.trim().toLowerCase();
 
@@ -101,6 +110,7 @@ function handleSearch() {
     renderChecklist(filtered);
 }
 
+    //----------------------------------RENDER CHECKLIST----------------------------
 function renderChecklist(list) {
 
     elements.container.innerHTML = "";
@@ -162,6 +172,7 @@ function renderChecklist(list) {
 
 }
 
+    //---------------------------------LOG FROM CHECKLIST---------------------------
 function logFromChecklist(row) {
     const birdNumber = row[0];
     const english = row[1] || "";
@@ -181,6 +192,7 @@ function logFromChecklist(row) {
     handleLog(`${birdNumber} - ${english} / ${afrikaans}`, birdNumber);
 }
 
+    //-----------------------------------HANDLE LOG-------------------------------------
 function handleLog(speciesOverride = null, birdNumberOverride = "") {
 
     const species = speciesOverride || elements.species.value.trim();
@@ -214,11 +226,13 @@ function handleLog(speciesOverride = null, birdNumberOverride = "") {
     clearForm();
 }
 
+    //------------------------------------CLEAR FORM------------------------------------
 function clearForm() {
     elements.species.value = "";
     elements.notes.value = "";
 }
 
+    //-----------------------------------RENDER DAILY CHECKLIST-------------------------
 function render() {
     elements.summaryBody.innerHTML = "";
 
