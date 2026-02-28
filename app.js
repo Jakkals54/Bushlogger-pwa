@@ -165,8 +165,14 @@ function renderChecklist(list) {
         label.style.cursor = "pointer";
         label.appendChild(checkbox);
 
-        const text = document.createTextNode(
-            ` ${birdNumber} - ${english} / ${afrikaans}`
+        // Changed this: const text = document.createTextNode(
+           // ` ${birdNumber} - ${english} / ${afrikaans}`
+        const displayText = state.displayColumns
+        ? state.displayColumns.map(i => row[i]).join(" | ")
+        : row.join(" | ");
+        //Added to line 174
+        const text = document.createTextNode(` ${displayText}`);
+        
         );
 
         label.appendChild(text);
@@ -244,6 +250,16 @@ function handleLog(speciesOverride = null, birdNumberOverride = "") {
     clearForm();
 }
 
+    //-----------------------------------APPLY SELECTED COLUMNS CSV---------------
+function applySelectedColumns() {
+
+    state.displayColumns = Array.from(
+        elements.columnSelector.selectedOptions
+    ).map(opt => parseInt(opt.value));
+
+    renderChecklist(state.checklist);
+}
+    
     //------------------------------------CLEAR FORM------------------------------------
 function clearForm() {
     elements.species.value = "";
