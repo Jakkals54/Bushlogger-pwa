@@ -162,7 +162,7 @@ function renderChecklist(list) {
                     birdNumber
                 );
 
-                renderChecklist(state.checklist); // refresh to sync ticks
+                //renderChecklist(state.checklist); // refresh to sync ticks
             }
         });
 
