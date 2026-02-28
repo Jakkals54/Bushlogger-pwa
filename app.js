@@ -29,6 +29,8 @@ function cache() {
     elements.notes = document.getElementById("notes");
     elements.logButton = document.getElementById("logButton");
     elements.summaryBody = document.getElementById("summaryBody");
+    elements.columnSelector = document.getElementById("columnSelector");
+    elements.applyColumns = document.getElementById("applyColumns");
 }
 
     //---------------------------BIND EVENTLISTNER-----------------------
@@ -36,6 +38,7 @@ function bind() {
     elements.csvInput.addEventListener("change", loadCSV);
     elements.search.addEventListener("input", handleSearch);
     elements.logButton.addEventListener("click", handleLog);
+    elements.applyColumns.addEventListener("click", applySelectedColumns);
 }
 
     //---------------------------LOAD STORAGE----------------------------
@@ -80,6 +83,25 @@ function loadCSV(event) {
         const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
         const headers = lines[0].split(",");
 
+elements.columnSelector.innerHTML = "";
+
+headers.forEach((header, index) => {
+    const option = document.createElement("option");
+    option.value = index;
+    option.textContent = header;
+
+    // Column 0 = key (always selected and disabled)
+    if (index === 0) {
+        option.selected = true;
+        option.disabled = true;
+    }
+
+    elements.columnSelector.appendChild(option);
+});
+
+elements.search.disabled = false;
+elements.search.placeholder = "Type to search...";
+
         state.checklist = lines.slice(1).map(line =>
             line.split(",").map(cell => cell.trim())
         );
@@ -87,7 +109,7 @@ function loadCSV(event) {
         renderChecklist(state.checklist);
     };
 
-    reader.readAsText(file, "UTF-8");
+        reader.readAsText(file, "UTF-8");
 }
 
     //--------------------------------HANDLE SEARCH-------------------------------
