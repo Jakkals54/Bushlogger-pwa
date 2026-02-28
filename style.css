@@ -30,6 +30,31 @@ section {
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
+/* Dark Mode */
+body.dark {
+    background: #121212;
+    color: #e0e0e0;
+}
+
+body.dark section {
+    background: #1e1e1e;
+}
+
+body.dark input,
+body.dark textarea,
+body.dark select {
+    background: #2c2c2c;
+    color: white;
+    border: 1px solid #444;
+}
+
+body.dark button {
+    background: #388e3c;
+}
+
+body.dark #summaryTable th {
+    background: #2c2c2c;
+}
 
 /* -------- Inputs -------- */
 input[type="text"],
