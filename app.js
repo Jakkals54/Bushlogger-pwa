@@ -211,8 +211,6 @@ function renderChecklist(list) {
         //Added to line 174
         const text = document.createTextNode(` ${displayText}`);
         
-        );
-
         label.appendChild(text);
         wrapper.appendChild(label);
         elements.container.appendChild(wrapper);
