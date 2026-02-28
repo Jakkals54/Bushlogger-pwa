@@ -102,34 +102,64 @@ function handleSearch() {
 }
 
 function renderChecklist(list) {
+
     elements.container.innerHTML = "";
 
     list.forEach(row => {
 
-        const birdNumber = row[0];
+        if (!Array.isArray(row)) return;
+
+        const birdNumber = row[0] || "";
         const english = row[1] || "";
         const afrikaans = row[2] || "";
 
-        const div = document.createElement("div");
+        const wrapper = document.createElement("div");
+        wrapper.className = "checklist-item";
 
-        div.innerHTML = `
-            <label>
-                <input type="checkbox">
-                ${birdNumber} - ${english} / ${afrikaans}
-            </label>
-        `;
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "checkItem";
 
-        const checkbox = div.querySelector("input");
+        const label = document.createElement("label");
+        label.style.cursor = "pointer";
+        label.appendChild(checkbox);
 
+        const text = document.createTextNode(
+            ` ${birdNumber} - ${english} / ${afrikaans}`
+        );
+
+        label.appendChild(text);
+        wrapper.appendChild(label);
+        elements.container.appendChild(wrapper);
+
+        // 🔥 Immediate transfer when checked
         checkbox.addEventListener("change", function () {
-            if (this.checked) {
-                logFromChecklist(row);
+
+            if (!this.checked) return;
+
+            const today = new Date().toISOString().split("T")[0];
+
+            const duplicate = state.sightings.some(s =>
+                s.birdNumber === birdNumber &&
+                s.date === today
+            );
+
+            if (duplicate) {
+                alert("Already logged today.");
                 this.checked = false;
+                return;
             }
+
+            handleLog(
+                `${birdNumber} - ${english} / ${afrikaans}`,
+                birdNumber
+            );
+
+            this.checked = false;
         });
 
-        elements.container.appendChild(div);
     });
+
 }
 
 function logFromChecklist(row) {
