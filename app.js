@@ -33,6 +33,27 @@ function cache() {
     elements.applyColumns = document.getElementById("applyColumns");
 }
 
+    // Dark Mode Toggle
+const darkBtn = document.getElementById("darkModeToggle");
+
+darkBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+
+    if (document.body.classList.contains("dark")) {
+        localStorage.setItem("darkMode", "on");
+        darkBtn.textContent = "☀ Light Mode";
+    } else {
+        localStorage.setItem("darkMode", "off");
+        darkBtn.textContent = "🌙 Dark Mode";
+    }
+});
+
+// Load saved preference
+if (localStorage.getItem("darkMode") === "on") {
+    document.body.classList.add("dark");
+    darkBtn.textContent = "☀ Light Mode";
+}
+
     //---------------------------BIND EVENTLISTNER-----------------------
 function bind() {
     elements.csvInput.addEventListener("change", loadCSV);
