@@ -160,3 +160,14 @@ input:checked + .slider:before {
         justify-content: space-between;
     }
 }
+/* Sticky action bar on mobile */
+@media (max-width: 768px) {
+    .action-bar {
+        position: sticky;
+        bottom: 0;
+        background: #ffffff;
+        padding: 10px;
+        border-top: 1px solid #ddd;
+        z-index: 1000;
+    }
+}
