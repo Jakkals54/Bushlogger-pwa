@@ -4,21 +4,26 @@ const state = {
     sightings: [],
     observers: ["Guest"],
     checklist: [],
-    editIndex: null
+    editIndex: null,
+    displayColumns: null
 };
 
 const elements = {};
+let deferredPrompt = null;
 
-    //------------------------------INIT()------------------------
+// ---------------- INIT ----------------
 function init() {
     cache();
     loadStorage();
     populateObservers();
     bind();
+    initDarkMode();
+    initOnlineStatus();
+    initInstallPrompt();
     render();
 }
 
-    //-----------------------------CACHE---------------------------
+// ---------------- CACHE ----------------
 function cache() {
     elements.search = document.getElementById("checklistSearch");
     elements.container = document.getElementById("checklistContainer");
@@ -31,71 +36,96 @@ function cache() {
     elements.summaryBody = document.getElementById("summaryBody");
     elements.columnSelector = document.getElementById("columnSelector");
     elements.applyColumns = document.getElementById("applyColumns");
+    elements.darkBtn = document.getElementById("darkModeToggle");
+    elements.offlineIndicator = document.getElementById("offlineIndicator");
+    elements.installBtn = document.getElementById("installBtn");
 }
 
-    // Dark Mode Toggle
-const darkBtn = document.getElementById("darkModeToggle");
+// ---------------- DARK MODE ----------------
+function initDarkMode() {
+    if (!elements.darkBtn) return;
 
-darkBtn.addEventListener("click", () => {
-    document.body.classList.toggle("dark");
-
-    if (document.body.classList.contains("dark")) {
-        localStorage.setItem("darkMode", "on");
-        darkBtn.textContent = "☀ Light Mode";
-    } else {
-        localStorage.setItem("darkMode", "off");
-        darkBtn.textContent = "🌙 Dark Mode";
+    if (localStorage.getItem("darkMode") === "on") {
+        document.body.classList.add("dark");
+        elements.darkBtn.textContent = "☀ Light Mode";
     }
-});
 
-// Load saved preference
-if (localStorage.getItem("darkMode") === "on") {
-    document.body.classList.add("dark");
-    darkBtn.textContent = "☀ Light Mode";
+    elements.darkBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark");
+
+        if (document.body.classList.contains("dark")) {
+            localStorage.setItem("darkMode", "on");
+            elements.darkBtn.textContent = "☀ Light Mode";
+        } else {
+            localStorage.setItem("darkMode", "off");
+            elements.darkBtn.textContent = "🌙 Dark Mode";
+        }
+    });
 }
 
-    
+// ---------------- ONLINE STATUS ----------------
+function initOnlineStatus() {
+    if (!elements.offlineIndicator) return;
 
- //-------------------------Online Status------------------------------   
-    function updateOnlineStatus() {
-    const indicator = document.getElementById("offlineIndicator");
-    if (navigator.onLine) {
-        indicator.style.display = "none";
-    } else {
-        indicator.style.display = "block";
+    function update() {
+        elements.offlineIndicator.style.display =
+            navigator.onLine ? "none" : "block";
     }
+
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    update();
 }
 
-window.addEventListener("online", updateOnlineStatus);
-window.addEventListener("offline", updateOnlineStatus);
+// ---------------- INSTALL PROMPT ----------------
+function initInstallPrompt() {
+    if (!elements.installBtn) return;
 
-updateOnlineStatus();
+    window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        elements.installBtn.style.display = "inline-block";
+    });
 
-    //---------------------------BIND EVENTLISTNER-----------------------
+    elements.installBtn.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        elements.installBtn.style.display = "none";
+    });
+}
+
+// ---------------- BIND EVENTS ----------------
 function bind() {
-    elements.csvInput.addEventListener("change", loadCSV);
-    elements.search.addEventListener("input", handleSearch);
-    elements.logButton.addEventListener("click", handleLog);
-    elements.applyColumns.addEventListener("click", applySelectedColumns);
+    if (elements.csvInput)
+        elements.csvInput.addEventListener("change", loadCSV);
+
+    if (elements.search)
+        elements.search.addEventListener("input", handleSearch);
+
+    if (elements.logButton)
+        elements.logButton.addEventListener("click", handleLog);
+
+    if (elements.applyColumns)
+        elements.applyColumns.addEventListener("click", applySelectedColumns);
 }
 
-    //---------------------------LOAD STORAGE----------------------------
+// ---------------- STORAGE ----------------
 function loadStorage() {
     state.sightings = JSON.parse(localStorage.getItem("bush_sightings")) || [];
     state.observers = JSON.parse(localStorage.getItem("bush_observers")) || ["Guest"];
 }
 
-    //---------------------------SAVE SIGHTINGS---------------------------
 function saveSightings() {
     localStorage.setItem("bush_sightings", JSON.stringify(state.sightings));
 }
 
-    //---------------------------SAVE OBSERVERS-----------------------------
 function saveObservers() {
     localStorage.setItem("bush_observers", JSON.stringify(state.observers));
 }
 
-    //---------------------------POPULATE OBSERVERS-------------------------
+// ---------------- OBSERVERS ----------------
 function populateObservers() {
     elements.datalist.innerHTML = "";
 
@@ -110,7 +140,7 @@ function populateObservers() {
     }
 }
 
-    //----------------------------LOAD CSV---------------------------------------
+// ---------------- CSV ----------------
 function loadCSV(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -121,24 +151,20 @@ function loadCSV(event) {
         const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
         const headers = lines[0].split(",");
 
-elements.columnSelector.innerHTML = "";
+        elements.columnSelector.innerHTML = "";
 
-headers.forEach((header, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = header;
+        headers.forEach((header, index) => {
+            const option = document.createElement("option");
+            option.value = index;
+            option.textContent = header;
 
-    // Column 0 = key (always selected and disabled)
-    if (index === 0) {
-        option.selected = true;
-        option.disabled = true;
-    }
+            if (index === 0) {
+                option.selected = true;
+                option.disabled = true;
+            }
 
-    elements.columnSelector.appendChild(option);
-});
-
-elements.search.disabled = false;
-elements.search.placeholder = "Type to search...";
+            elements.columnSelector.appendChild(option);
+        });
 
         state.checklist = lines.slice(1).map(line =>
             line.split(",").map(cell => cell.trim())
@@ -147,175 +173,78 @@ elements.search.placeholder = "Type to search...";
         renderChecklist(state.checklist);
     };
 
-        reader.readAsText(file, "UTF-8");
+    reader.readAsText(file, "UTF-8");
 }
 
-    //--------------------------------HANDLE SEARCH-------------------------------
-function handleSearch() {
-    const query = elements.search.value.trim().toLowerCase();
-
-    if (!query) {
-        renderChecklist(state.checklist);
-        return;
-    }
-
-    const filtered = state.checklist.filter(row =>
-        Array.isArray(row) &&
-        row.some(cell =>
-            typeof cell === "string" &&
-            cell.toLowerCase().includes(query)
-        )
-    );
-
-    renderChecklist(filtered);
-}
-
-    //----------------------------------RENDER CHECKLIST----------------------------
+// ---------------- CHECKLIST ----------------
 function renderChecklist(list) {
-
     elements.container.innerHTML = "";
-
     const today = new Date().toISOString().split("T")[0];
 
     list.forEach(row => {
-
         if (!Array.isArray(row)) return;
 
-        const birdNumber = row[0] || "";
-        const english = row[1] || "";
-        const afrikaans = row[2] || "";
-
         const wrapper = document.createElement("div");
-        wrapper.className = "checklist-item";
-
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
 
-        // ✅ PRE-CHECK if already logged today
         const alreadyLogged = state.sightings.some(s =>
-            s.birdNumber === birdNumber &&
-            s.date === today
+            s.birdNumber === row[0] && s.date === today
         );
 
         checkbox.checked = alreadyLogged;
 
-        const label = document.createElement("label");
-        label.style.cursor = "pointer";
-        label.appendChild(checkbox);
-
-        // Changed this: const text = document.createTextNode(
-           // ` ${birdNumber} - ${english} / ${afrikaans}`
         const displayText = state.displayColumns
-        ? state.displayColumns.map(i => row[i]).join(" | ")
-        : row.join(" | ");
-        //Added to line 174
-        const text = document.createTextNode(` ${displayText}`);
-        
-        label.appendChild(text);
+            ? state.displayColumns.map(i => row[i]).join(" | ")
+            : row.join(" | ");
+
+        const label = document.createElement("label");
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(" " + displayText));
+
         wrapper.appendChild(label);
         elements.container.appendChild(wrapper);
 
-        checkbox.addEventListener("change", function () {
-
-            if (this.checked) {
-
-                if (alreadyLogged) return;
-
-                handleLog(
-                    `${birdNumber} - ${english} / ${afrikaans}`,
-                    birdNumber
-                );
-
-                //renderChecklist(state.checklist); // refresh to sync ticks
+        checkbox.addEventListener("change", () => {
+            if (!alreadyLogged) {
+                handleLog(displayText, row[0]);
             }
         });
-
     });
 }
-    //---------------------------------LOG FROM CHECKLIST---------------------------
-function logFromChecklist(row) {
-    const birdNumber = row[0];
-    const english = row[1] || "";
-    const afrikaans = row[2] || "";
 
-    const today = new Date().toISOString().split("T")[0];
-
-    const duplicate = state.sightings.some(s =>
-        s.birdNumber === birdNumber && s.date === today
-    );
-
-    if (duplicate) {
-        alert("Already logged today.");
-        return;
-    }
-
-    handleLog(`${birdNumber} - ${english} / ${afrikaans}`, birdNumber);
-}
-
-    //-----------------------------------HANDLE LOG-------------------------------------
+// ---------------- LOGGING ----------------
 function handleLog(speciesOverride = null, birdNumberOverride = "") {
-
     const species = speciesOverride || elements.species.value.trim();
-    const birdNumber = birdNumberOverride;
-
     if (!species) return;
 
     const observer = elements.observer.value.trim() || "Guest";
     const notes = elements.notes.value.trim();
     const date = new Date().toISOString().split("T")[0];
 
-    if (observer !== "Guest") {
-        state.observers = state.observers.filter(o => o !== observer);
-        state.observers.unshift(observer);
-        state.observers = state.observers.slice(0,5);
-        saveObservers();
-        populateObservers();
-    }
+    const entry = { date, birdNumber: birdNumberOverride, species, observer, notes };
 
-    const entry = { date, birdNumber, species, observer, notes };
-
-    if (state.editIndex !== null) {
-        state.sightings[state.editIndex] = entry;
-        state.editIndex = null;
-    } else {
-        state.sightings.push(entry);
-    }
-
+    state.sightings.push(entry);
     saveSightings();
     render();
     clearForm();
 }
 
-    //-----------------------------------APPLY SELECTED COLUMNS CSV---------------
-function applySelectedColumns() {
-
-    state.displayColumns = Array.from(
-        elements.columnSelector.selectedOptions
-    ).map(opt => parseInt(opt.value));
-
-    renderChecklist(state.checklist);
-}
-    
-    //------------------------------------CLEAR FORM------------------------------------
 function clearForm() {
     elements.species.value = "";
     elements.notes.value = "";
 }
 
-    //-----------------------------------RENDER DAILY CHECKLIST-------------------------
+// ---------------- RENDER TABLE ----------------
 function render() {
-
     elements.summaryBody.innerHTML = "";
 
     state.sightings.forEach((entry, index) => {
-
-        entry.rowNumber = index + 1;
-
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-            <td><input type="checkbox" class="rowSelect" data-index="${index}"></td>
-            <td>${entry.rowNumber}</td>
+            <td><input type="checkbox"></td>
+            <td>${index + 1}</td>
             <td>${entry.date}</td>
             <td>${entry.birdNumber || ""}</td>
             <td>${entry.species}</td>
@@ -327,23 +256,6 @@ function render() {
         elements.summaryBody.appendChild(tr);
     });
 }
-
-let deferredPrompt;
-const installBtn = document.getElementById("installBtn");
-
-window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = "inline-block";
-});
-
-installBtn.addEventListener("click", () => {
-    installBtn.style.display = "none";
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => {
-        deferredPrompt = null;
-    });
-});
 
 return { init };
 
