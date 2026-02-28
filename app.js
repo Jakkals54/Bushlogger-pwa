@@ -54,6 +54,8 @@ if (localStorage.getItem("darkMode") === "on") {
     darkBtn.textContent = "☀ Light Mode";
 }
 
+    
+
  //-------------------------Online Status------------------------------   
     function updateOnlineStatus() {
     const indicator = document.getElementById("offlineIndicator");
@@ -327,6 +329,24 @@ function render() {
         elements.summaryBody.appendChild(tr);
     });
 }
+
+let deferredPrompt;
+const installBtn = document.getElementById("installBtn");
+
+window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = "inline-block";
+});
+
+installBtn.addEventListener("click", () => {
+    installBtn.style.display = "none";
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+    });
+});
+
 return { init };
 
 })();
