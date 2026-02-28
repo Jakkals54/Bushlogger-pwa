@@ -268,33 +268,29 @@ function clearForm() {
 
     //-----------------------------------RENDER DAILY CHECKLIST-------------------------
 function render() {
+
     elements.summaryBody.innerHTML = "";
 
-    state.sightings.forEach((s, index) => {
+    state.sightings.forEach((entry, index) => {
+
+        entry.rowNumber = index + 1;
 
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${s.date}</td>
-            <td>${s.birdNumber}</td>
-            <td>${s.species}</td>
-            <td>${s.observer}</td>
-            <td>${s.notes}</td>
-            <td><button data-index="${index}">Edit</button></td>
+            <td><input type="checkbox" class="rowSelect" data-index="${index}"></td>
+            <td>${entry.rowNumber}</td>
+            <td>${entry.date}</td>
+            <td>${entry.birdNumber || ""}</td>
+            <td>${entry.species}</td>
+            <td>${entry.observer}</td>
+            <td>${entry.gps || ""}</td>
+            <td>${entry.notes}</td>
         `;
-
-        tr.querySelector("button").addEventListener("click", () => {
-            elements.species.value = s.species;
-            elements.notes.value = s.notes;
-            elements.observer.value = s.observer;
-            state.editIndex = index;
-        });
 
         elements.summaryBody.appendChild(tr);
     });
 }
-
 return { init };
 
 })();
