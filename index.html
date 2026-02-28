@@ -2,36 +2,53 @@
  <html lang="en">
  <head>
 
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
- <link rel="manifest" href="manifest.json">
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="style.css">
+      <link rel="manifest" href="manifest.json">
+  
  <title>BushLogger - PWA v1.5</title>
 
- <link rel="stylesheet" href="style.css">
- <link rel="manifest" href="manifest.json">
  </head>
+  
 <body>
-  <link rel="stylesheet" href="css/styles.css">
-<title>BushLogger – Field Logging</title>
 
 <h1>🐦 BushLogger – Field Logging</h1>
 
-<!--     SELECT AND LOAD CSV -->
- <div id="checklistContainer" style="max-height:300px; overflow-y:auto; border:1px solid #ccc; padding:5px;"></div>
+<!-- 1️⃣ CSV LOAD -->
+<section>
+  <h2>Load Checklist CSV</h2>
 
- <hr>
+  <input type="file" id="csvInput" accept=".csv">
 
-<!-- CSV LOAD -->
-<h2>Load CSV Checklist</h2>
-<input type="file" id="csvInput" accept=".csv">
+  <br><br>
+
+  <label>Select Columns To Display:</label><br>
+  <select id="columnSelector" multiple size="5"></select>
+
+  <br><br>
+  <button id="applyColumns">Apply Columns</button>
+</section>
 
 <hr>
 
- <!-- SEARCH -->
-<label>Search (any column):</label>
-<input type="text" id="checklistSearch" placeholder="Type English / Afrikaans / Number">
+<!-- 2️⃣ SEARCH -->
+<section>
+  <h2>Search</h2>
+  <input type="text" id="checklistSearch" disabled placeholder="Load CSV first...">
+</section>
 
+<hr>
+
+<!-- 3️⃣ CHECKLIST -->
+<section>
+  <h2>Checklist</h2>
+  <div id="checklistContainer" style="max-height:300px; overflow-y:auto; border:1px solid #ccc;"></div>
+</section>
+
+<hr>
+
+<!-- 4️⃣ DAILY SIGHTINGS (leave this exactly as it already is) -->
 <!-- LOG SECTION -->
 <h2>Log Sighting</h2>
 
