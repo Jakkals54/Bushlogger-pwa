@@ -115,6 +115,8 @@ function renderChecklist(list) {
 
     elements.container.innerHTML = "";
 
+    const today = new Date().toISOString().split("T")[0];
+
     list.forEach(row => {
 
         if (!Array.isArray(row)) return;
@@ -128,7 +130,14 @@ function renderChecklist(list) {
 
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
-        checkbox.className = "checkItem";
+
+        // ✅ PRE-CHECK if already logged today
+        const alreadyLogged = state.sightings.some(s =>
+            s.birdNumber === birdNumber &&
+            s.date === today
+        );
+
+        checkbox.checked = alreadyLogged;
 
         const label = document.createElement("label");
         label.style.cursor = "pointer";
@@ -142,36 +151,23 @@ function renderChecklist(list) {
         wrapper.appendChild(label);
         elements.container.appendChild(wrapper);
 
-        // 🔥 Immediate transfer when checked
         checkbox.addEventListener("change", function () {
 
-            if (!this.checked) return;
+            if (this.checked) {
 
-            const today = new Date().toISOString().split("T")[0];
+                if (alreadyLogged) return;
 
-            const duplicate = state.sightings.some(s =>
-                s.birdNumber === birdNumber &&
-                s.date === today
-            );
+                handleLog(
+                    `${birdNumber} - ${english} / ${afrikaans}`,
+                    birdNumber
+                );
 
-            if (duplicate) {
-                alert("Already logged today.");
-                this.checked = false;
-                return;
+                renderChecklist(state.checklist); // refresh to sync ticks
             }
-
-            handleLog(
-                `${birdNumber} - ${english} / ${afrikaans}`,
-                birdNumber
-            );
-
-            this.checked = false;
         });
 
     });
-
 }
-
     //---------------------------------LOG FROM CHECKLIST---------------------------
 function logFromChecklist(row) {
     const birdNumber = row[0];
