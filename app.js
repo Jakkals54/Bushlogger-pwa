@@ -54,6 +54,21 @@ if (localStorage.getItem("darkMode") === "on") {
     darkBtn.textContent = "☀ Light Mode";
 }
 
+ //-------------------------Online Status------------------------------   
+    function updateOnlineStatus() {
+    const indicator = document.getElementById("offlineIndicator");
+    if (navigator.onLine) {
+        indicator.style.display = "none";
+    } else {
+        indicator.style.display = "block";
+    }
+}
+
+window.addEventListener("online", updateOnlineStatus);
+window.addEventListener("offline", updateOnlineStatus);
+
+updateOnlineStatus();
+
     //---------------------------BIND EVENTLISTNER-----------------------
 function bind() {
     elements.csvInput.addEventListener("change", loadCSV);
