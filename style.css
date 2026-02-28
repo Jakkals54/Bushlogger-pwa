@@ -196,3 +196,36 @@ input:checked + .slider:before {
         z-index: 1000;
     }
 }
+
+/* Card view for small screens */
+@media (max-width: 600px) {
+
+    #summaryTable thead {
+        display: none;
+    }
+
+    #summaryTable,
+    #summaryTable tbody,
+    #summaryTable tr,
+    #summaryTable td {
+        display: block;
+        width: 100%;
+    }
+
+    #summaryTable tr {
+        background: #ffffff;
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    body.dark #summaryTable tr {
+        background: #1e1e1e;
+    }
+
+    #summaryTable td {
+        border: none;
+        padding: 5px 0;
+    }
+}
